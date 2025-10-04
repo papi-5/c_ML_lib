@@ -11,6 +11,8 @@ typedef struct tensor Tensor;
 
 Tensor* createTensor (int rows, int coll);
 
+int sizeOfTensor (Tensor *ten);		// returns size in bytes
+
 void resetTensor (Tensor *ten);		// sets all elements to 0
 
 void printTensor (Tensor *ten);

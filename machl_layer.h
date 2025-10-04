@@ -21,6 +21,8 @@ typedef struct layer Layer;
 
 Layer* createLayer (int rows, int coll);
 
+int sizeOfLayer (Layer *lay);
+
 void uRandomWeights (Layer *lay, float lowerLimit, float upperLimit);
 
 void nRandomWeights (Layer *lay, float mean, float stddev);

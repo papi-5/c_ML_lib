@@ -14,6 +14,14 @@ Tensor* createTensor (int rows, int coll)
 	return ten;
 }
 
+int sizeOfTensor (Tensor *ten)
+{
+	int size = sizeof (float) * ten -> rows * ten -> coll;
+	size += sizeof (Tensor);
+
+	return size;
+}
+
 void resetTensor (Tensor *ten)
 {
 	int length = ten -> rows * ten -> coll;
