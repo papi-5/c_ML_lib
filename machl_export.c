@@ -91,5 +91,29 @@ void printNetMeta (Net *net)
 
 void exportNet (const char *path, Net *net)
 {
+    FILE *file = fopen (path, "wb");
 
+    if (!file) {
+        printf ("Could not export network.\n");
+        return;
+    }
+
+    int length = net -> numOfLayers;
+    Layer **layers = net -> layers;
+
+    fwrite (&(net -> numOfLayers), sizeof (int), 1, file);
+    fwrite (&(net -> netCostFunction), sizeof (int), 1, file);
+    fwrite (&(net -> learnRate), sizeof (float), 1, file);
+    fwrite (&(net -> dropout), sizeof (float), 1, file);
+    fwrite (net -> neurons, sizeof (int), length, file);
+    fwrite (net -> layerActFunctions, sizeof (int), length - 1, file);
+
+    for (int i = 0; i < length - 1; i++) {
+        int size = layers[i] -> weights -> rows * layers[i] -> weights -> coll;
+        fwrite (layers[i] -> weights -> ten, sizeof (float), size, file);
+        size = layers[i] -> biases -> rows * layers[i] -> biases -> coll;
+        fwrite (layers[i] -> biases -> ten, sizeof (float), size, file);
+    }
+
+    fclose(file);
 }

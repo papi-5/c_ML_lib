@@ -11,4 +11,6 @@ char* intString (int n);
 
 void printNetMeta (Net *net);
 
+void exportNet (const char *path, Net *net);
+
 #endif
