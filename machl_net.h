@@ -39,4 +39,6 @@ void setLearnRate (Net *net, float learnRate);
 
 void setDropout (Net *net, float dropout);
 
+void deleteNet (Net *net);
+
 #endif

@@ -126,3 +126,18 @@ void setDropout (Net *net, float dropout)
 
     net -> dropout = dropout;
 }
+
+void deleteNet (Net *net)
+{
+    if (net == NULL)
+        return;
+    
+    int length = net -> numOfLayers;
+
+    for (int i = 0; i < length; i++)
+        deleteLayer(net -> layers[i]);
+    free (net -> neurons);
+    free (net -> layerActFunctions);
+    free (net);
+    net = NULL;
+}
