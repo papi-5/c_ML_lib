@@ -19,6 +19,22 @@ Layer* createLayer (int rows, int coll)
 	return lay;
 }
 
+int sizeOfLayer (Layer *lay)
+{
+	int size = sizeOfTensor(lay -> weights);
+	size += sizeOfTensor(lay -> weightsT);
+	size += sizeOfTensor(lay -> biases);
+	size += sizeOfTensor(lay -> output);
+	size += sizeOfTensor(lay -> outputT);
+	size += sizeOfTensor(lay -> weightG);
+	size += sizeOfTensor(lay -> biasG);
+	size += sizeOfTensor(lay -> inputG);
+	size += sizeOfTensor(lay -> costG);
+	size += sizeof (Layer);
+
+	return size;
+}
+
 void uRandomWeights (Layer *lay, float lowerLimit, float upperLimit)
 {
 	uRandomTensor (lay -> weights);

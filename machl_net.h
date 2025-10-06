@@ -21,6 +21,8 @@ typedef struct net Net;
 
 Net* createNet (int numOfLayers, int *neurons);
 
+int sizeOfNet (Net *net);
+
 void uXavier (Net *net);
 
 void nXavier (Net *net);

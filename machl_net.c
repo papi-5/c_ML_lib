@@ -32,6 +32,22 @@ Net* createNet (int numOfLayers, int *neurons)
     return net;
 }
 
+int sizeOfNet (Net *net)
+{
+    int size = 0;
+    int length = net -> numOfLayers;
+    Layer **layers = net -> layers;
+
+    for (int i = 0; i < length - 1; i++)
+        size += sizeOfLayer(layers[i]);
+
+    size += sizeof (int) * length;
+    size += sizeof (int) * (length - 1);
+    size += sizeof (Net);
+
+    return size;
+}
+
 void uXavier (Net *net)
 {
     int length = net -> numOfLayers - 1;
