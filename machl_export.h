@@ -13,4 +13,6 @@ void printNetMeta (Net *net);
 
 void exportNet (const char *path, Net *net);
 
+Net* importNet (const char *path);
+
 #endif

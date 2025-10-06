@@ -3,7 +3,6 @@
 #include <math.h>
 #include <string.h>
 #include "machl_tensor.h"
-#include "machl_function.h"
 #include "machl_layer.h"
 #include "machl_net.h"
 #include "machl_export.h"
@@ -93,7 +92,7 @@ void exportNet (const char *path, Net *net)
 {
     FILE *file = fopen (path, "wb");
 
-    if (!file) {
+    if (!file || !net) {
         printf ("Could not export network.\n");
         return;
     }
@@ -116,4 +115,50 @@ void exportNet (const char *path, Net *net)
     }
 
     fclose(file);
+}
+
+Net* importNet (const char *path)
+{
+    FILE *file = fopen (path, "rb");
+
+    if (!file) {
+        printf ("Could not import network.\n");
+        return NULL;
+    }
+
+    int length;
+    int netCostFunction;
+    int learnRate;
+    int dropout;
+
+    fread (&length, sizeof (int), 1, file);
+    fread (&netCostFunction, sizeof (int), 1, file);
+    fread (&learnRate, sizeof (float), 1, file);
+    fread (&dropout, sizeof (float), 1, file);
+
+    int *neurons = malloc (sizeof (int) * length);
+    int *layerActFunctions = malloc (sizeof (int) * (length - 1));
+
+    fread (neurons, sizeof (int), length, file);
+    fread (layerActFunctions, sizeof (int), length - 1, file);
+
+    Net *net = createNet (length, neurons);
+
+    setCostFunction (net, netCostFunction);
+    setLearnRate (net, learnRate);
+    setDropout (net, dropout);
+    setActFunctions (net, layerActFunctions);
+
+    Layer **layers = net -> layers;
+
+    for (int i = 0; i < length - 1; i++) {
+        int size = layers[i] -> weights -> rows * layers[i] -> weights -> coll;
+        fread (layers[i] -> weights -> ten, sizeof (float), size, file);
+        size = layers[i] -> biases -> rows * layers[i] -> biases -> coll;
+        fread (layers[i] -> biases -> ten, sizeof (float), size, file);
+    }
+
+    fclose (file);
+
+    return net;
 }
