@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "machl_tensor.h"
 #include "machl_layer.h"
 #include "machl_net.h"
 #include "machl_export.h"
