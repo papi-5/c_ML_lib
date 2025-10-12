@@ -103,7 +103,7 @@ void addTensors (Tensor *tenA, Tensor *tenB)
 		tenA -> ten[i] += tenB -> ten[i];
 }
 
-float addMul (Tensor *tenL, Tensor *tenR, int row, int coll)
+float addMull (Tensor *tenL, Tensor *tenR, int row, int coll)
 {
 	int lColl = tenL -> coll;
 	int rColl = tenR -> coll;

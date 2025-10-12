@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <math.h>
-#include "machl.h"
+#include "machl_export.h"
 
 int main ()
 {
-	int arr[] = {4, 4, 2, 2};
+	printf ("helo\n");
+/*	int arr[] = {4, 4, 2, 2};
 	int num = 4;
 	NeuralNet *net = createNeuralNet (num, arr);
 	initializeNeuralNet (net, -2, 2, -5, 5);
@@ -39,5 +39,5 @@ int main ()
 		}
 		trainNeuralNet (net, 4, b, a);
 	}
-	return 0;
+*/	return 0;
 }
