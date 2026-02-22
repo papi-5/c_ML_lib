@@ -1,19 +1,17 @@
-CC=gcc
-CFLAGS=-march=native
-LIBS=-lm
-INC := -I include/
+CC = gcc
+CFLAGS = -march=native -Wall -Wextra
+LIBS = -lm
+INC = -I include/
 
-SRCDIR := src/
-OBJDIR := build/
-HEADIR := include/
-BINDIR := bin/
+SRCDIR = src/
+OBJDIR = build/
+BINDIR = bin/
 
-SRC := main.c machl_export.c machl_net.c machl_layer.c machl_function.c machl_tensor.c
-SRC := $(patsubst %.c,$(SRCDIR)%.c,$(SRC))
-OBJ := $(patsubst $(SRCDIR)%.c,$(OBJDIR)%.o,$(SRC))
-HEAD := $(shell find $(HEADIR) -name '*.h')
+SRC = $(wildcard $(SRCDIR)*.c)
+OBJ = $(patsubst $(SRCDIR)%.c, $(OBJDIR)%.o, $(SRC))
+MAIN = $(BINDIR)main
 
-MAIN := $(BINDIR)main
+.PHONY: all compile run clean
 
 all: $(MAIN)
 
@@ -25,8 +23,14 @@ run: $(MAIN)
 clean:
 	rm -f $(OBJDIR)* $(BINDIR)*
 
-$(MAIN): $(OBJ)
+$(MAIN): $(OBJ) | $(BINDIR)
 	$(CC) $(OBJ) -o $(MAIN) $(LIBS)
 
-$(OBJDIR)%.o: $(SRCDIR)%.c $(HEAD)
+$(OBJDIR)%.o: $(SRCDIR)%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)

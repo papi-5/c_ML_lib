@@ -1,26 +1,26 @@
 #include <math.h>
-#include "machl_tensor.h"
-#include "machl_function.h"
+#include "mcl_tensor.h"
+#include "mcl_function.h"
 
-ActFunction activationFunctions[] = {{sigmoid, derSigmoid},
-									 {Tanh, derTanh},
-									 {ReLU, derReLU},
-									 {softmax, derSoftmax}};
+mcl_activation activation_functions[] = {{mcl_sigmoid, mcl_sigmoid_d},
+									 {mcl_tanh, mcl_tanh_d},
+									 {mcl_relu, mcl_relu_d},
+									 {mcl_softmax, mcl_softmax_d}};
 
-CostFunction costFunctions[] = {{MSE, derMSE},
-								{crossEntropy, derCrossEntropy}};
+mcl_cost cost_functions[] = {{mcl_mse, mcl_mse_d},
+								{mcl_cross_entropy, mcl_cross_entropy_d}};
 
-void sigmoid (Tensor *ten)
+void mcl_sigmoid (mcl_tensor *ten)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++)
 		ten -> ten[i] = 1.0 / (1.0 + exp (ten -> ten[i] * -1));
 }
 
-void derSigmoid (Tensor *ten, Tensor *res)
+void mcl_sigmoid_d (mcl_tensor *ten, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
 		float x = ten -> ten[i];
@@ -28,9 +28,9 @@ void derSigmoid (Tensor *ten, Tensor *res)
 	}
 }
 
-void Tanh (Tensor *ten)
+void mcl_tanh (mcl_tensor *ten)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
 		float x = ten -> ten[i];
@@ -40,17 +40,17 @@ void Tanh (Tensor *ten)
 	}
 }
 
-void derTanh (Tensor *ten, Tensor *res)
+void mcl_tanh_d (mcl_tensor *ten, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++)
 		res -> ten[i] = 1.0 - pow (ten ->ten[i], 2.0);
 }
 
-void ReLU (Tensor *ten)
+void mcl_relu (mcl_tensor *ten)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
 		if (ten -> ten[i] < 0)
@@ -58,20 +58,20 @@ void ReLU (Tensor *ten)
 	}
 }
 
-void derReLU (Tensor *ten, Tensor *res)
+void mcl_relu_d (mcl_tensor *ten, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
 		res -> ten[i] = (ten -> ten[i] > 0) ? 1 : 0;
 	}
 }
 
-void softmax (Tensor *ten)
+void mcl_softmax (mcl_tensor *ten)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 	float sum = 0;
-	Tensor *tmp = createTensor (1, length);
+	mcl_tensor *tmp = mcl_tensor_create (1, length);	// can be an array
 
 	for (int i = 0; i < length; i++) {
 		tmp -> ten[i] = exp (tmp -> ten[i]);
@@ -81,12 +81,12 @@ void softmax (Tensor *ten)
 	for (int i = 0; i < length; i++)
 		ten -> ten[i] = tmp -> ten[i] / sum;
 
-	deleteTensor (tmp);
+	mcl_tensor_delete (tmp);
 }
 
-void derSoftmax (Tensor *ten, Tensor *res)
+void mcl_softmax_d (mcl_tensor *ten, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
 		res -> ten[i] = 0;
@@ -98,9 +98,9 @@ void derSoftmax (Tensor *ten, Tensor *res)
 	}
 }
 
-float MSE (Tensor *ten, Tensor *y)
+float mcl_mse (mcl_tensor *ten, mcl_tensor *y)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 	float res = 0;
 
 	for (int i = 0; i < length; i++) {
@@ -113,17 +113,17 @@ float MSE (Tensor *ten, Tensor *y)
 	return res;
 }
 
-void derMSE (Tensor *ten, Tensor *y, Tensor *res)
+void mcl_mse_d (mcl_tensor *ten, mcl_tensor *y, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++)
 		res -> ten[i] = 2.0 * (ten -> ten[i] - y -> ten[i]);
 }
 
-float crossEntropy (Tensor *ten, Tensor *y)
+float mcl_cross_entropy (mcl_tensor *ten, mcl_tensor *y)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 	float res = 0;
 
 	for (int i = 0; i < length; i++)
@@ -134,9 +134,9 @@ float crossEntropy (Tensor *ten, Tensor *y)
 	return res;
 }
 
-void derCrossEntropy (Tensor *ten, Tensor *y, Tensor *res)
+void mcl_cross_entropy_d (mcl_tensor *ten, mcl_tensor *y, mcl_tensor *res)
 {
-	int length = ten -> rows * ten -> coll;
+	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++)
 		res -> ten[i] = -1.0 * (y -> ten[i] / ten -> ten[i]);

@@ -1,87 +1,88 @@
+/*
 #ifndef MACHL_H
 #define MACHL_H
 
 struct matrix {
 	double *mat;
-	int rows;
-	int coll;
+	int row;
+	int col;
 };
 
 typedef struct matrix Matrix;
 
-struct actFunction {
+struct mcl_activation {
 	void (*function) (Matrix*);
-	void (*derFunction) (Matrix*, Matrix*);
+	void (*function_d) (Matrix*, Matrix*);
 };
 
-typedef struct actFunction ActFunction;
+typedef struct mcl_activation mcl_activation;
 
-struct costFunction {
+struct mcl_cost {
 	double (*function) (Matrix*, Matrix*);
-	void (*derFunction) (Matrix*, Matrix*, Matrix*);
+	void (*function_d) (Matrix*, Matrix*, Matrix*);
 };
 
-typedef struct costFunction CostFunction;
+typedef struct mcl_cost mcl_cost;
 
-struct layer {
+struct mcl_layer {
 	Matrix *weights;
-	Matrix *weightsT;
+	Matrix *weights_t;
 	Matrix *biases;
 	Matrix *output;
-	Matrix *outputT;
+	Matrix *output_t;
 	Matrix *weightGradient;
 	Matrix *biasGradient;
 	Matrix *inputGradient;
 	Matrix *costGradient;
-	ActFunction *actFunc;
+	mcl_activation *actFunc;
 };
 
-typedef struct layer Layer;
+typedef struct mcl_layer mcl_layer;
 
 struct neuralNet {
-	Layer **layers;
+	mcl_layer **layers;
 	int *neurons;
 	int *layerActivationFunctions;
-	int numOfLayers;
-	CostFunction *costFunction;
-	int netCostFunction;
+	int num_layers;
+	mcl_cost *mcl_cost;
+	int cost_id;
 	Matrix **dataSet;
 	double alpha;
 };
 
 typedef struct neuralNet NeuralNet;
 
-void sigmoid (Matrix *mat);
+void mcl_sigmoid (Matrix *mat);
 
-void derSigmoid (Matrix *mat, Matrix *res);
+void mcl_sigmoid_d (Matrix *mat, Matrix *res);
 
-void Tanh (Matrix *mat);
+void mcl_tanh (Matrix *mat);
 
-void derTanh (Matrix *mat, Matrix *res);
+void mcl_tanh_d (Matrix *mat, Matrix *res);
 
-void RElu (Matrix *mat);
+void mcl_relu (Matrix *mat);
 
-void derRElu (Matrix *mat, Matrix *res);
+void mcl_relu_d (Matrix *mat, Matrix *res);
 
-void softmax (Matrix *mat);
+void mcl_softmax (Matrix *mat);
 
-void derSoftmax (Matrix *mat, Matrix *res);
+void mcl_softmax_d (Matrix *mat, Matrix *res);
 
-double MSE (Matrix *mat, Matrix *y);
+double mcl_mse (Matrix *mat, Matrix *y);
 
-void derMSE (Matrix *mat, Matrix *y, Matrix *res);
+void mcl_mse_d (Matrix *mat, Matrix *y, Matrix *res);
 
-double crossEntropy (Matrix *mat, Matrix *y);
+double mcl_cross_entropy (Matrix *mat, Matrix *y);
 
-void derCrossEntropy (Matrix *mat, Matrix *y, Matrix *res);
+void mcl_cross_entropy_d (Matrix *mat, Matrix *y, Matrix *res);
 
 void printMatrix (Matrix *mat);
 
-Matrix* createMatrix (int rows, int coll);
+Matrix* createMatrix (int row, int col);
 
 void randomMatrix (Matrix *mat, double lowerBound, double upperBound);
 
-Matrix* createRandomMatrix (int rows, int coll, double lowerBound, double upperBound);
+Matrix* createRandomMatrix (int row, int col, double lowerBound, double upperBound);
 
 void resetMatrix (Matrix *mat);
 
@@ -91,7 +92,7 @@ void scaleMatrix (Matrix *mat, double factor);
 
 void addMatrices (Matrix *matA, Matrix *matB);
 
-double matrixMultiplication (Matrix *left, Matrix *right, int row, int coll);
+double matrixMultiplication (Matrix *left, Matrix *right, int row, int col);
 
 void multiplyMatrices (Matrix *left, Matrix *right, Matrix *result);
 
@@ -99,35 +100,35 @@ void addMultiplyMatrices (Matrix *left, Matrix *right, Matrix *result);
 
 void deleteMatrix (Matrix *mat);
 
-Layer* createLayer (int rows, int coll);
+mcl_layer* mcl_layer_create (int row, int col);
 
-void randomizeLayer (Layer *lay, double lowerWeightBound, double upperWeightBound, double lowerBiasBound, double upperBiasBound);
+void randomizeLayer (mcl_layer *lay, double lowerWeightBound, double upperWeightBound, double lowerBiasBound, double upperBiasBound);
 
-void printLayer (Layer *lay);
+void mcl_layer_print (mcl_layer *lay);
 
-void deleteLayer (Layer *lay);
+void mcl_layer_delete (mcl_layer *lay);
 
-NeuralNet* createNeuralNet (int numOfLayers, int *neurons);
+NeuralNet* createNeuralNet (int num_layers, int *neurons);
 
 void initializeNeuralNet (NeuralNet *net, double lowerWeightBound, double upperWeightBound, double lowerBiasBound, double upperBiasBound);
 
 void printNeuralNet (NeuralNet *net);
 
-void printGradient (NeuralNet *net);
+void mcl_network_print_grad (NeuralNet *net);
 
-void setActivationFunctions (NeuralNet *net, int *actFuncs);
+void setActivationFunctions (NeuralNet *net, int *act_funcs);
 
-void setCostFunction (NeuralNet *net, int costFunc);
+void mcl_network_set_cost (NeuralNet *net, int cost_func);
 
 void setAlpha (NeuralNet *net, double alpha);
 
-void forwardPassThroughLayer (Layer *lay, Matrix *input);
+void forwardPassThroughLayer (mcl_layer *lay, Matrix *input);
 
 void forwardPropagation (NeuralNet *net, Matrix *input);
 
 void multiplyGradient (Matrix *inputGradient, Matrix *costGradient);
 
-void backPassThroughLayer (Layer *currLay, Layer *prevLay);
+void backPassThroughLayer (mcl_layer *currLay, mcl_layer *prevLay);
 
 void backPropagation (NeuralNet *net, Matrix *inputT, Matrix *y);
 
@@ -142,3 +143,4 @@ void trainNeuralNet (NeuralNet *net, int numOfBatches, int *batches, double *dat
 double neuralNetCost (NeuralNet *net, int numOfExamples, double *dataSet);
 
 #endif
+*/

@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "mcl_tensor.h"
+
+mcl_tensor* mcl_tensor_create (int row, int col)
+{
+	mcl_tensor *ten = malloc(sizeof (mcl_tensor));
+
+	ten -> row = row;
+	ten -> col = col;
+	ten -> ten = malloc (sizeof (float) * (row * col));
+
+	return ten;
+}
+
+size_t mcl_tensor_size (mcl_tensor *ten)
+{
+	size_t size = sizeof (float) * ten -> row * ten -> col;
+	size += sizeof (mcl_tensor);
+
+	return size;
+}
+
+void mcl_tensor_reset (mcl_tensor *ten)
+{
+	int length = ten -> row * ten -> col;
+
+	for (int i = 0; i < length; i++)
+		ten -> ten[i] = 0;
+}
+
+void mcl_tensor_print (mcl_tensor *ten)
+{
+	int row = ten -> row;
+	int col = ten -> col;
+
+	for (int i = 0; i < row; i++) {
+		for (int j = 0; j < col; j++)
+			printf ("%f ", ten -> ten[i * col + j]);
+		printf ("\n");
+	}
+	printf ("\n");
+}
+
+void mcl_tensor_random_uniform (mcl_tensor *ten)
+{
+	int length = ten -> row * ten -> col;
+
+	srand (time (NULL));
+
+	for (int i = 0; i < length; i++) {
+		ten -> ten[i] = (float)rand() / RAND_MAX;
+	}
+}
+
+void mcl_tensor_random_normal (mcl_tensor *ten)
+{
+	int length = ten -> row * ten -> col;
+	float sum;
+
+	srand (time (NULL));
+
+	for (int i = 0; i < length; i++) {
+		sum = 0;
+		for (int j = 0; j < 12; j++)
+			sum += (float)rand() / RAND_MAX;
+		ten -> ten[i] = sum - 6;
+	}
+}
+
+void mcl_tensor_add_scalar (mcl_tensor *ten, float scalar)
+{
+	int length = ten -> row * ten -> col;
+
+	for (int i = 0; i < length; i++)
+		ten -> ten[i] += scalar;
+}
+
+void mcl_tensor_scale (mcl_tensor *ten, float scalar)
+{
+	int length = ten -> row * ten -> col;
+
+	for (int i = 0; i < length; i++)
+		ten -> ten[i] *= scalar;
+}
+
+void mcl_tensor_transpose (mcl_tensor *ten, mcl_tensor *ten_t)
+{
+	int row = ten -> row;
+	int col = ten -> col;
+	int length = row * col;
+
+	for (int i = 0; i < length; i++)
+		ten_t -> ten[i] = ten -> ten[(i % row) * col + i / row];
+}
+
+void mcl_tensor_add (mcl_tensor *ten_a, mcl_tensor *ten_b)
+{
+	int length = ten_a -> row * ten_a -> col;
+
+	for (int i = 0; i < length; i++)
+		ten_a -> ten[i] += ten_b -> ten[i];
+}
+
+float mcl_tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
+{
+	int lColl = ten_l -> col;
+	int rColl = ten_r -> col;
+	float sum = 0;
+
+	for (int i = 0; i < lColl; i++)
+		sum += ten_l -> ten[row * lColl + i] * ten_r -> ten[i * rColl + col];
+
+	return sum;
+}
+
+void mcl_tensor_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res)
+{
+	int lRows = ten_l -> row;
+	int rColl = ten_r -> col;
+
+	for (int i = 0; i < lRows; i++) {
+		for (int j = 0; j < rColl; j++)
+			res -> ten[i * rColl + j] = mcl_tensor_dot (ten_l, ten_r, i, j);
+	}
+}
+
+void mcl_tensor_add_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res)
+{
+	int lRows = ten_l -> row;
+	int rColl = ten_r -> col;
+
+	for (int i = 0; i < lRows; i++) {
+		for (int j = 0; j < rColl; j++)
+			res -> ten[i * rColl + j] += mcl_tensor_dot (ten_l, ten_r, i, j);
+	}
+}
+
+void mcl_tensor_delete (mcl_tensor *ten)
+{
+	if (ten == NULL)
+		return;
+
+	free (ten -> ten);
+	free (ten);
+	ten = NULL;
+}
