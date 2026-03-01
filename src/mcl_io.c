@@ -68,9 +68,8 @@ void mcl_network_print_meta (mcl_network *net)
 void mcl_network_export (const char *path, mcl_network *net)
 {
     FILE *file = fopen (path, "wb");
-
     if (!file || !net) {
-        printf ("Could not export network.\n");
+        printf ("Could not export network.\n\n");
         return;
     }
 
@@ -97,9 +96,8 @@ void mcl_network_export (const char *path, mcl_network *net)
 mcl_network* mcl_network_import (const char *path)
 {
     FILE *file = fopen (path, "rb");
-
     if (!file) {
-        printf ("Could not import network.\n");
+        printf ("Could not import network.\n\n");
         return NULL;
     }
 
