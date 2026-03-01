@@ -65,7 +65,7 @@ void mcl_network_print_meta (mcl_network *net)
     printf ("Dropout: %f\n\n", net -> dropout);
 }
 
-void mcl_network_export (const char *path, mcl_network *net)
+void mcl_network_export (mcl_network *net, const char *path)
 {
     FILE *file = fopen (path, "wb");
     if (!file || !net) {
