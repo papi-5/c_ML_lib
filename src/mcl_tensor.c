@@ -3,6 +3,8 @@
 #include <time.h>
 #include "mcl_tensor.h"
 
+#define TILE_DIM 32
+
 mcl_tensor* mcl_tensor_create (int row, int col)
 {
 	mcl_tensor *ten = malloc(sizeof (mcl_tensor));
@@ -101,6 +103,78 @@ void mcl_tensor_add (mcl_tensor *ten_a, mcl_tensor *ten_b)
 
 	for (int i = 0; i < length; i++)
 		ten_a -> ten[i] += ten_b -> ten[i];
+}
+
+static void tile_mul (
+	float *A, float *B, float *C,
+	int m, int k, int n,
+	int lda, int ldb, int ldc
+)
+{
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int l = 0; l < k; l++) {
+				C[i * ldc + j] += A[i * lda + l] * B[l * ldb + j];
+			}
+		}
+	}
+}
+
+static void tile_mul_t (
+	float *A, float *B, float *C,
+	int m, int k, int n,
+	int lda, int ldb, int ldc
+)
+{
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int l = 0; l < k; l++) {
+				C[i * ldc + j] += A[l * lda + i] * B[l * ldb + j];
+			}
+		}
+	}
+}
+
+void mcl_tensor_mul (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
+{
+	int rows = left -> row;
+	int kdim = left -> col;
+	int cols = right -> col;
+	for (int i = 0; i < rows; i += TILE_DIM) {
+		for (int j = 0; j < cols; j += TILE_DIM) {
+			for (int l = 0; l < kdim; l += TILE_DIM) {
+				int m = rows - i < TILE_DIM ? (rows - i) : TILE_DIM;
+				int k = kdim - l < TILE_DIM ? (kdim - l) : TILE_DIM;
+				int n = cols - j < TILE_DIM ? (cols - j) : TILE_DIM;
+				tile_mul (
+					&(left -> ten[i * kdim + l]), &(right ->ten[l * cols + j]), &(res -> ten[i * cols + j]),
+					m, k, n,
+					kdim, cols, cols
+				);
+			}
+		}
+	}
+}
+
+void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
+{
+	int col_l = left -> col;
+	int kdim = left -> row;
+	int col_r = right -> col;
+	for (int i = 0; i < col_l; i += TILE_DIM) {
+		for (int j = 0; j < col_r; j += TILE_DIM) {
+			for (int l = 0; l < kdim; l += TILE_DIM) {
+				int m = col_l - i < TILE_DIM ? (col_l - i) : TILE_DIM;
+				int k = kdim - l < TILE_DIM ? (kdim - l) : TILE_DIM;
+				int n = col_r - j < TILE_DIM ? (col_r - j) : TILE_DIM;
+				tile_mul_t (
+					&(left -> ten[l * col_l + i]), &(right ->ten[l * col_r + j]), &(res -> ten[i * col_r + j]),
+					m, k, n,
+					col_l, col_r, col_r
+				);
+			}
+		}
+	}
 }
 
 float mcl_tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
