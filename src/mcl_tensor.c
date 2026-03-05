@@ -103,6 +103,36 @@ void mcl_tensor_add (mcl_tensor *ten_a, mcl_tensor *ten_b)
 		ten_a -> ten[i] += ten_b -> ten[i];
 }
 
+static void tile_mul (
+	float *A, float *B, float *C,
+	int m, int k, int n,
+	int lda, int ldb, int ldc
+)
+{
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int l = 0; l < k; l++) {
+				C[i * ldc + j] += A[i * lda + l] * B[l * ldb + j];
+			}
+		}
+	}
+}
+
+static void tile_mul_t (
+	float *A, float *B, float *C,
+	int m, int k, int n,
+	int lda, int ldb, int ldc
+)
+{
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int l = 0; l < k; l++) {
+				C[i * ldc + j] += A[l * lda + i] * B[l * ldb + j];
+			}
+		}
+	}
+}
+
 float mcl_tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
 {
 	int lColl = ten_l -> col;
