@@ -84,7 +84,7 @@ void test_multiplication_speed ()
 void test_io ()
 {
 	int neurons[4] = {4, 4, 2, 2};
-	mcl_network *net = mcl_network_create (4, neurons);
+	mcl_network *net = mcl_network_create (neurons, 4);
 
 	mcl_network_init_xavier_normal (net);
 	mcl_network_print (net);
@@ -117,9 +117,21 @@ void test_dataset ()
 	data_print (data1 -> test, data1 -> test_size);
 }
 
+void test_forward ()
+{
+	int neurons[] = {4, 4, 2, 2};
+	mcl_network *net = mcl_network_create (neurons, 4);
+	mcl_network_init_kaiming (net);
+	mcl_tensor *input = mcl_tensor_create (4, 1);
+	mcl_tensor_random_normal (input);
+	mcl_network_forward_test (net, input);
+	mcl_network_print (net);
+	mcl_tensor_print (input);
+	mcl_tensor_print (net -> layers[2] -> output);
+}
+
 int main ()
 {
-	test_tensors ();
-	test_multiplication_speed ();
+	test_forward ();
 	return 0;
 }

@@ -192,6 +192,17 @@ void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 	}
 }
 
+void mcl_tensor_dropout (mcl_tensor *ten, float dropout)
+{
+	int length = ten -> row * ten -> col;
+	for (int i = 0; i < length; i++) {
+		float x = (float)rand() / RAND_MAX;
+		if (x < dropout) {
+			ten -> ten[i] = 0;
+		}
+	}
+}
+
 static float tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
 {
 	int lColl = ten_l -> col;

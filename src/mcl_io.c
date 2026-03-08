@@ -117,7 +117,7 @@ mcl_network* mcl_network_import (const char *path)
     fread (neurons, sizeof (int), length, file);
     fread (act_ids, sizeof (int), length - 1, file);
 
-    mcl_network *net = mcl_network_create (length, neurons);
+    mcl_network *net = mcl_network_create (neurons, length);
 
     mcl_network_set_cost (net, cost_id);
     mcl_network_set_learn_rate (net, learn_rate);

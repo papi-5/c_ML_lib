@@ -9,7 +9,7 @@
 extern mcl_activation activation_functions[];
 extern mcl_cost cost_functions[];
 
-mcl_network* mcl_network_create (int num_layers, int *neurons)
+mcl_network* mcl_network_create (int *neurons, int num_layers)
 {
     mcl_network *net = malloc (sizeof (mcl_network));
     net -> layers = malloc (sizeof (mcl_layer*) * (num_layers - 1));
@@ -22,7 +22,7 @@ mcl_network* mcl_network_create (int num_layers, int *neurons)
         net -> neurons[i] = neurons[i];
 
     for (int i = 0; i < num_layers - 1; i++) {
-        net -> layers[i] = mcl_layer_create(neurons[i], neurons[i + 1]);
+        net -> layers[i] = mcl_layer_create(neurons[i + 1], neurons[i]);
         net -> layers[i] -> activation = &(activation_functions[0]);
     }
 
@@ -95,7 +95,7 @@ void mcl_network_print (mcl_network *net)
     mcl_layer **layers = net -> layers;
 
     for (int i = 0; i < length; i++) {
-        printf ("mcl_layer %d:\n\n", i);
+        printf ("Layer %d:\n\n", i);
         mcl_layer_print (layers[i]);
     }
 }
@@ -141,6 +141,28 @@ void mcl_network_set_dropout (mcl_network *net, float dropout)
         return;
 
     net -> dropout = dropout;
+}
+
+void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropout)
+{
+    int length = net -> num_layers - 1;
+    mcl_layer ** layers = net -> layers;
+    net -> input = input;
+    for (int i = 0; i < length - 1; i++) {
+        mcl_layer_forward_train (layers[i], input, dropout);
+        input = layers[i] -> output;
+    }
+    mcl_layer_forward_test (layers[length - 1], input);
+}
+
+void mcl_network_forward_test (mcl_network *net, mcl_tensor *input)
+{
+    int length = net -> num_layers - 1;
+    mcl_layer ** layers = net -> layers;
+    for (int i = 0; i < length; i++) {
+        mcl_layer_forward_test (layers[i], input);
+        input = layers[i] -> output;
+    }
 }
 
 void mcl_network_delete (mcl_network *net)

@@ -33,6 +33,8 @@ void mcl_tensor_mul (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res);
 
 void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res);
 
+void mcl_tensor_dropout (mcl_tensor *ten, float dropout);
+
 void mcl_tensor_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res);
 
 void mcl_tensor_add_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res);
