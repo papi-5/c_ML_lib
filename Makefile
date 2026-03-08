@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -march=native -Wall -Wextra
+CFLAGS = -O3 -march=native -Wall -Wextra
 LIBS = -lm
 INC = -I include/
 

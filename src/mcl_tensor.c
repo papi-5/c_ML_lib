@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <immintrin.h>
 #include "mcl_tensor.h"
 
 #define TILE_DIM 32
@@ -11,7 +12,7 @@ mcl_tensor* mcl_tensor_create (int row, int col)
 
 	ten -> row = row;
 	ten -> col = col;
-	ten -> ten = malloc (sizeof (float) * (row * col));
+	ten -> ten = aligned_alloc (64, (row * col) * sizeof (float));
 
 	return ten;
 }
@@ -112,8 +113,15 @@ static void tile_mul (
 )
 {
 	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			for (int l = 0; l < k; l++) {
+		for (int l = 0; l < k; l++) {
+			__m256 a_scalar = _mm256_set1_ps (A[i * lda + l]);
+			for (int j = 0; j < n - 7; j += 8) {
+				__m256 c_vec = _mm256_loadu_ps (&C[i * ldc + j]);
+				__m256 b_vec = _mm256_loadu_ps (&B[l * ldb + j]);
+				c_vec = _mm256_fmadd_ps (a_scalar, b_vec, c_vec);
+				_mm256_storeu_ps (&C[i * ldc + j], c_vec);
+			}
+			for (int j = n - (n % 8); j < n; j++) {
 				C[i * ldc + j] += A[i * lda + l] * B[l * ldb + j];
 			}
 		}
@@ -127,8 +135,15 @@ static void tile_mul_t (
 )
 {
 	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
-			for (int l = 0; l < k; l++) {
+		for (int l = 0; l < k; l++) {
+			__m256 a_scalar = _mm256_set1_ps (A[l * lda + i]);
+			for (int j = 0; j < n - 7; j += 8) {
+				__m256 c_vec = _mm256_loadu_ps (&C[i * ldc + j]);
+				__m256 b_vec = _mm256_loadu_ps (&B[l * ldb + j]);
+				c_vec = _mm256_fmadd_ps (a_scalar, b_vec, c_vec);
+				_mm256_storeu_ps (&C[i * ldc + j], c_vec);
+			}
+			for (int j = n - (n % 8); j < n; j++) {
 				C[i * ldc + j] += A[l * lda + i] * B[l * ldb + j];
 			}
 		}
@@ -177,7 +192,7 @@ void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 	}
 }
 
-float mcl_tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
+static float tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)
 {
 	int lColl = ten_l -> col;
 	int rColl = ten_r -> col;
@@ -196,7 +211,7 @@ void mcl_tensor_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res)
 
 	for (int i = 0; i < lRows; i++) {
 		for (int j = 0; j < rColl; j++)
-			res -> ten[i * rColl + j] = mcl_tensor_dot (ten_l, ten_r, i, j);
+			res -> ten[i * rColl + j] = tensor_dot (ten_l, ten_r, i, j);
 	}
 }
 
@@ -207,7 +222,7 @@ void mcl_tensor_add_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *
 
 	for (int i = 0; i < lRows; i++) {
 		for (int j = 0; j < rColl; j++)
-			res -> ten[i * rColl + j] += mcl_tensor_dot (ten_l, ten_r, i, j);
+			res -> ten[i * rColl + j] += tensor_dot (ten_l, ten_r, i, j);
 	}
 }
 
