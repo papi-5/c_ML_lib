@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <math.h>
+#include <time.h>
 #include "mcl_io.h"
 #include "mcl_dataset.h"
 
@@ -19,18 +21,64 @@ void test_tensors ()
 	mcl_tensor_mul (ten1, ten2, ten4);
 	mcl_tensor_multiply (ten1, ten2, ten5);
 	for (int i = 0; i < 35*33; i++) {
-		if (ten4 -> ten[i] != ten5 -> ten[i]) {
+		if (fabs (ten4 -> ten[i] - ten5 -> ten[i]) > 1e-4) {
 			printf ("wrong\n");
+			break;
 		}
 	}
 	mcl_tensor_reset (ten4);
 	mcl_tensor_mul_t (ten3, ten2, ten4);
 	for (int i = 0; i < 35*33; i++) {
-		if (ten4 -> ten[i] != ten5 -> ten[i]) {
+		if (fabs (ten4 -> ten[i] - ten5 -> ten[i]) > 1e-4) {
 			printf ("wrong\n");
+			break;
 		}
 	}
-	mcl_tensor_print (ten4);
+	//mcl_tensor_print (ten4);
+}
+
+void test_multiplication_speed ()
+{
+	mcl_tensor *tena = mcl_tensor_create (1000, 5000);
+	mcl_tensor *tenb = mcl_tensor_create (5000, 1000);
+	mcl_tensor *res = mcl_tensor_create (1000, 1000);
+	clock_t t;
+
+	mcl_tensor_random_normal (tena);
+	mcl_tensor_random_normal (tenb);
+	printf ("1000x5000x1000\n");
+
+	t = clock ();
+	mcl_tensor_multiply (tena, tenb, res);
+	t = clock () - t;
+	printf ("time naive: %f\n", ((double)t) / CLOCKS_PER_SEC);
+
+	t = clock();
+	mcl_tensor_mul (tena, tenb, res);
+	t = clock () - t;
+	printf ("time tiled: %f\n", ((double)t) / CLOCKS_PER_SEC);
+
+	mcl_tensor_delete (tena);
+	mcl_tensor_delete (tenb);
+	mcl_tensor_delete (res);
+
+	tena = mcl_tensor_create (512, 784);
+	tenb = mcl_tensor_create (784, 512);
+	res = mcl_tensor_create (512, 512);
+
+	mcl_tensor_random_normal (tena);
+	mcl_tensor_random_normal (tenb);
+	printf ("512x784x512\n");
+
+	t = clock ();
+	mcl_tensor_multiply (tena, tenb, res);
+	t = clock () - t;
+	printf ("time naive: %f\n", ((double)t) / CLOCKS_PER_SEC);
+
+	t = clock();
+	mcl_tensor_mul (tena, tenb, res);
+	t = clock () - t;
+	printf ("time tiled: %f\n", ((double)t) / CLOCKS_PER_SEC);
 }
 
 void test_io ()
@@ -72,5 +120,6 @@ void test_dataset ()
 int main ()
 {
 	test_tensors ();
+	test_multiplication_speed ();
 	return 0;
 }
