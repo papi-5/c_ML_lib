@@ -140,6 +140,11 @@ void test_forward ()
 	mcl_tensor_print (net -> layers[2] -> output);
 }
 
+void test_backward ()
+{
+	
+}
+
 int main ()
 {
 	test_tensors ();

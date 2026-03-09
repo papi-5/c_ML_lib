@@ -108,7 +108,7 @@ void mcl_network_print_grad (mcl_network *net)
     for (int i = 0; i < length; i++) {
         printf ("Gradient %d:\n\n", i);
         mcl_tensor_print(layers[i] -> weight_grad);
-        mcl_tensor_print(layers[i] -> input_grad);
+        mcl_tensor_print(layers[i] -> delta);
     }
 }
 
@@ -147,7 +147,6 @@ void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropo
 {
     int length = net -> num_layers - 1;
     mcl_layer ** layers = net -> layers;
-    net -> input = input;
     for (int i = 0; i < length - 1; i++) {
         mcl_layer_forward_train (layers[i], input, dropout);
         input = layers[i] -> output;
@@ -163,6 +162,16 @@ void mcl_network_forward_test (mcl_network *net, mcl_tensor *input)
         mcl_layer_forward_test (layers[i], input);
         input = layers[i] -> output;
     }
+}
+
+void mcl_network_backward (mcl_network *net, mcl_tensor *input)
+{
+    int length = net ->num_layers - 1;
+    mcl_layer **layers = net -> layers;
+    for (int i = length - 1; i > 0; i--) {
+        mcl_layer_backward (layers[i], layers[i - 1] -> output, layers[i - 1] -> output_grad);
+    }
+    mcl_layer_backward (layers[0], input, NULL);
 }
 
 void mcl_network_delete (mcl_network *net)

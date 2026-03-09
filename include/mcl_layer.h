@@ -10,8 +10,8 @@ typedef struct mcl_layer {
 	mcl_tensor *output;
 	mcl_tensor *weight_grad;
 	mcl_tensor *bias_grad;
-	mcl_tensor *input_grad;
-	mcl_tensor *cost_grad;
+	mcl_tensor *delta;
+	mcl_tensor *output_grad;
 	mcl_activation *activation;
 } mcl_layer;
 
@@ -32,6 +32,8 @@ void mcl_layer_print (mcl_layer *lay);
 void mcl_layer_forward_train (mcl_layer *lay, mcl_tensor *input, float dropout);
 
 void mcl_layer_forward_test (mcl_layer *lay, mcl_tensor *input);
+
+void mcl_layer_backward (mcl_layer *lay, mcl_tensor *input, mcl_tensor *output_grad);
 
 void mcl_layer_delete (mcl_layer *lay);
 

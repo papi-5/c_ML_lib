@@ -106,6 +106,15 @@ void mcl_tensor_add (mcl_tensor *ten_a, mcl_tensor *ten_b)
 		ten_a -> ten[i] += ten_b -> ten[i];
 }
 
+void mcl_tensor_mul_elem (mcl_tensor *ten_a, mcl_tensor *ten_b)
+{
+	int length = ten_a -> row * ten_a -> col;
+
+	for (int i = 0; i < length; i++) {
+		ten_a -> ten[i] *= ten_b -> ten[i];
+	}
+}
+
 static void tile_mul (
 	float *A, float *B, float *C,
 	int m, int k, int n,
