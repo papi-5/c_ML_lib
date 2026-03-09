@@ -8,13 +8,15 @@ void test_tensors ()
 {
 	mcl_tensor *ten1 = mcl_tensor_create (35, 34);
 	mcl_tensor *ten2 = mcl_tensor_create (34, 33);
-	mcl_tensor *ten3 = mcl_tensor_create (34, 35);
+	mcl_tensor *ten1t = mcl_tensor_create (34, 35);
+	mcl_tensor *ten2t = mcl_tensor_create (33, 34); 
 	mcl_tensor *ten4 = mcl_tensor_create (35, 33);
 	mcl_tensor *ten5 = mcl_tensor_create (35, 33);
 
 	mcl_tensor_random_normal (ten1);
 	mcl_tensor_random_normal (ten2);
-	mcl_tensor_transpose (ten1, ten3);
+	mcl_tensor_transpose (ten1, ten1t);
+	mcl_tensor_transpose (ten2, ten2t);
 
 	//mcl_tensor_print (ten1);
 	//mcl_tensor_print (ten2);
@@ -27,7 +29,15 @@ void test_tensors ()
 		}
 	}
 	mcl_tensor_reset (ten4);
-	mcl_tensor_mul_t (ten3, ten2, ten4);
+	mcl_tensor_mul_tl (ten1t, ten2, ten4);
+	for (int i = 0; i < 35*33; i++) {
+		if (fabs (ten4 -> ten[i] - ten5 -> ten[i]) > 1e-4) {
+			printf ("wrong\n");
+			break;
+		}
+	}
+	mcl_tensor_reset (ten4);
+	mcl_tensor_mul_tr (ten1, ten2t, ten4);
 	for (int i = 0; i < 35*33; i++) {
 		if (fabs (ten4 -> ten[i] - ten5 -> ten[i]) > 1e-4) {
 			printf ("wrong\n");
@@ -132,6 +142,6 @@ void test_forward ()
 
 int main ()
 {
-	test_forward ();
+	test_tensors ();
 	return 0;
 }

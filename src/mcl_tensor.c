@@ -128,7 +128,7 @@ static void tile_mul (
 	}
 }
 
-static void tile_mul_t (
+static void tile_mul_tl (
 	float *A, float *B, float *C,
 	int m, int k, int n,
 	int lda, int ldb, int ldc
@@ -150,6 +150,33 @@ static void tile_mul_t (
 	}
 }
 
+static void tile_mul_tr (
+	float *A, float *B, float *C,
+	int m, int k, int n,
+	int lda, int ldb, int ldc
+)
+{
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			__m256 c_acc = _mm256_setzero_ps ();
+			for (int l = 0; l < k - 7; l += 8) {
+				__m256 a_vec = _mm256_loadu_ps (&A[i * lda + l]);
+				__m256 b_vec = _mm256_loadu_ps (&B[j * ldb + l]);
+				c_acc = _mm256_fmadd_ps (a_vec, b_vec, c_acc);
+			}
+			__m128 low = _mm256_castps256_ps128 (c_acc);
+			__m128 high = _mm256_extractf128_ps (c_acc, 1);
+			__m128 c_acc128 = _mm_add_ps (low, high);
+			c_acc128 = _mm_hadd_ps (c_acc128, c_acc128);
+			c_acc128 = _mm_hadd_ps (c_acc128, c_acc128);
+			C[i * ldc + j] += _mm_cvtss_f32 (c_acc128);
+			for (int l = k - (k % 8); l < k; l++) {
+				C[i * ldc + j] += A[i * lda + l] * B[j * ldb + l];
+			}
+		}
+	}
+}
+
 void mcl_tensor_mul (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 {
 	int rows = left -> row;
@@ -162,7 +189,9 @@ void mcl_tensor_mul (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 				int k = kdim - l < TILE_DIM ? (kdim - l) : TILE_DIM;
 				int n = cols - j < TILE_DIM ? (cols - j) : TILE_DIM;
 				tile_mul (
-					&(left -> ten[i * kdim + l]), &(right ->ten[l * cols + j]), &(res -> ten[i * cols + j]),
+					&(left -> ten[i * kdim + l]),
+					&(right -> ten[l * cols + j]),
+					&(res -> ten[i * cols + j]),
 					m, k, n,
 					kdim, cols, cols
 				);
@@ -171,7 +200,7 @@ void mcl_tensor_mul (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 	}
 }
 
-void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
+void mcl_tensor_mul_tl (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 {
 	int col_l = left -> col;
 	int kdim = left -> row;
@@ -182,10 +211,35 @@ void mcl_tensor_mul_t (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
 				int m = col_l - i < TILE_DIM ? (col_l - i) : TILE_DIM;
 				int k = kdim - l < TILE_DIM ? (kdim - l) : TILE_DIM;
 				int n = col_r - j < TILE_DIM ? (col_r - j) : TILE_DIM;
-				tile_mul_t (
-					&(left -> ten[l * col_l + i]), &(right ->ten[l * col_r + j]), &(res -> ten[i * col_r + j]),
+				tile_mul_tl (
+					&(left -> ten[l * col_l + i]),
+					&(right -> ten[l * col_r + j]),
+					&(res -> ten[i * col_r + j]),
 					m, k, n,
 					col_l, col_r, col_r
+				);
+			}
+		}
+	}
+}
+
+void mcl_tensor_mul_tr (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res)
+{
+	int row_l = left -> row;
+	int kdim = left -> col;
+	int row_r = right -> row;
+	for (int i = 0; i < row_l; i += TILE_DIM) {
+		for (int j = 0; j < row_r; j += TILE_DIM) {
+			for (int l = 0; l < kdim; l += TILE_DIM) {
+				int m = row_l - i < TILE_DIM ? (row_l - i) : TILE_DIM;
+				int k = kdim - l < TILE_DIM ? (kdim - l) : TILE_DIM;
+				int n = row_r - j < TILE_DIM ? (row_r - j) : TILE_DIM;
+				tile_mul_tr (
+					&(left -> ten[i * kdim + l]),
+					&(right -> ten[j * kdim + l]),
+					&(res -> ten[i * row_r + j]),
+					m, k, n,
+					kdim, kdim, row_r
 				);
 			}
 		}
