@@ -57,12 +57,6 @@ void mcl_network_print_meta (mcl_network *net)
     for (int i = 0; i < length - 1; i++)
         printf ("%*d ", width, net -> act_ids[i]);
     printf ("\n\n");
-
-    printf ("Network cost function: %d\n", net -> cost_id);
-
-    printf ("Learning rate: %f\n", net -> learn_rate);
-
-    printf ("Dropout: %f\n\n", net -> dropout);
 }
 
 void mcl_network_export (mcl_network *net, const char *path)
@@ -77,9 +71,6 @@ void mcl_network_export (mcl_network *net, const char *path)
     mcl_layer **layers = net -> layers;
 
     fwrite (&(net -> num_layers), sizeof (int), 1, file);
-    fwrite (&(net -> cost_id), sizeof (int), 1, file);
-    fwrite (&(net -> learn_rate), sizeof (float), 1, file);
-    fwrite (&(net -> dropout), sizeof (float), 1, file);
     fwrite (net -> neurons, sizeof (int), length, file);
     fwrite (net -> act_ids, sizeof (int), length - 1, file);
 
@@ -102,14 +93,8 @@ mcl_network* mcl_network_import (const char *path)
     }
 
     int length;
-    int cost_id;
-    int learn_rate;
-    int dropout;
 
     fread (&length, sizeof (int), 1, file);
-    fread (&cost_id, sizeof (int), 1, file);
-    fread (&learn_rate, sizeof (float), 1, file);
-    fread (&dropout, sizeof (float), 1, file);
 
     int *neurons = malloc (sizeof (int) * length);
     int *act_ids = malloc (sizeof (int) * (length - 1));
@@ -119,9 +104,6 @@ mcl_network* mcl_network_import (const char *path)
 
     mcl_network *net = mcl_network_create (neurons, length);
 
-    mcl_network_set_cost (net, cost_id);
-    mcl_network_set_learn_rate (net, learn_rate);
-    mcl_network_set_dropout (net, dropout);
     mcl_network_set_activations (net, act_ids);
 
     mcl_layer **layers = net -> layers;

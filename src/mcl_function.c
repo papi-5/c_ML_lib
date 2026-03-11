@@ -71,17 +71,17 @@ void mcl_softmax (mcl_tensor *ten)
 {
 	int length = ten -> row * ten -> col;
 	float sum = 0;
-	mcl_tensor *tmp = mcl_tensor_create (1, length);	// can be an array
+	float *tmp = malloc (length * sizeof (float));
 
 	for (int i = 0; i < length; i++) {
-		tmp -> ten[i] = exp (tmp -> ten[i]);
-		sum += tmp -> ten[i];
+		tmp[i] = exp (tmp[i]);
+		sum += tmp[i];
 	}
 
 	for (int i = 0; i < length; i++)
-		ten -> ten[i] = tmp -> ten[i] / sum;
+		ten -> ten[i] = tmp[i] / sum;
 
-	mcl_tensor_delete (tmp);
+	free (tmp);
 }
 
 void mcl_softmax_d (mcl_tensor *ten, mcl_tensor *res)

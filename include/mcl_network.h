@@ -10,10 +10,6 @@ typedef struct mcl_network {
     int *neurons;
     int *act_ids;
     int num_layers;
-    mcl_cost *cost;
-    int cost_id;
-    float learn_rate;
-    float dropout;
 } mcl_network;
 
 mcl_network* mcl_network_create (int *neurons, int num_layers);
@@ -31,12 +27,6 @@ void mcl_network_print (mcl_network *net);
 void mcl_network_print_grad (mcl_network *net);
 
 void mcl_network_set_activations (mcl_network *net, int *act_funcs);
-
-void mcl_network_set_cost (mcl_network *net, int cost_func);
-
-void mcl_network_set_learn_rate (mcl_network *net, float learn_rate);
-
-void mcl_network_set_dropout (mcl_network *net, float dropout);
 
 void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropout);
 

@@ -7,7 +7,6 @@
 #include "mcl_network.h"
 
 extern mcl_activation activation_functions[];
-extern mcl_cost cost_functions[];
 
 mcl_network* mcl_network_create (int *neurons, int num_layers)
 {
@@ -25,9 +24,6 @@ mcl_network* mcl_network_create (int *neurons, int num_layers)
         net -> layers[i] = mcl_layer_create(neurons[i + 1], neurons[i]);
         net -> layers[i] -> activation = &(activation_functions[0]);
     }
-
-    net -> cost = &(cost_functions[0]);
-    net -> cost_id = 0;
 
     return net;
 }
@@ -122,25 +118,6 @@ void mcl_network_set_activations (mcl_network *net, int *act_funcs)
         act_ids[i] = act_funcs[i];
         layers[i] -> activation = &(activation_functions[act_funcs[i]]);
     }
-}
-
-void mcl_network_set_cost (mcl_network *net, int cost_func)
-{
-    net -> cost_id = cost_func;
-    net -> cost = &(cost_functions[cost_func]);
-}
-
-void mcl_network_set_learn_rate (mcl_network *net, float learn_rate)
-{
-    net -> learn_rate = -learn_rate;
-}
-
-void mcl_network_set_dropout (mcl_network *net, float dropout)
-{
-    if (dropout < 0 || dropout > 1)
-        return;
-
-    net -> dropout = dropout;
 }
 
 void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropout)
