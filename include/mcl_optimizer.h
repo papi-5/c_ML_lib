@@ -29,4 +29,14 @@ void mcl_optimizer_set_network (mcl_optimizer *opt, mcl_network *net);
 
 void mcl_optimizer_set_cost (mcl_optimizer *opt, int cost_id);
 
+void mcl_optimizer_set_learn_rate (mcl_optimizer *opt, float learn_rate);
+
+void mcl_optimizer_set_dropout (mcl_optimizer *opt, float dropout);
+
+void mcl_optimizer_set_beta1 (mcl_optimizer *opt, float beta1);
+
+void mcl_optimizer_set_beta2 (mcl_optimizer *opt, float beta2);
+
+void mcl_optimizer_set_epsilon (mcl_optimizer *opt, float epsilon);
+
 #endif
