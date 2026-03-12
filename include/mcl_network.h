@@ -26,6 +26,8 @@ void mcl_network_print (mcl_network *net);
 
 void mcl_network_print_grad (mcl_network *net);
 
+void mcl_network_reset_grad (mcl_network *net);
+
 void mcl_network_set_activations (mcl_network *net, int *act_funcs);
 
 void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropout);
@@ -33,6 +35,10 @@ void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropo
 void mcl_network_forward_test (mcl_network *net, mcl_tensor *input);
 
 void mcl_network_backward (mcl_network *net, mcl_tensor *input);
+
+void mcl_network_scale_grad (mcl_network *net, float scalar);
+
+void mcl_network_apply_grad (mcl_network *net);
 
 void mcl_network_delete (mcl_network *net);
 

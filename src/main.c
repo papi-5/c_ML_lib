@@ -2,7 +2,7 @@
 #include <math.h>
 #include <time.h>
 #include "mcl_io.h"
-#include "mcl_dataset.h"
+#include "mcl_optimizer.h"
 
 void test_tensors ()
 {
@@ -140,13 +140,40 @@ void test_forward ()
 	mcl_tensor_print (net -> layers[2] -> output);
 }
 
-void test_backward ()
+void test_sgd ()
 {
-	
+	int neurons[] = {4, 4, 2, 2};
+	int activation[] = {0, 0, 0};
+	mcl_network *net = mcl_network_create (neurons, 4);
+	mcl_network_set_activations (net, activation);
+	mcl_network_init_xavier_normal (net);
+
+	mcl_network_print (net);
+	mcl_network_print_meta (net);
+	mcl_network_print_grad (net);
+
+	mcl_dataset *data = mcl_dataset_create (4, 2, 0);
+	mcl_dataset_load_split (data, "test0.csv", 0.8);
+
+	mcl_optimizer *opt = mcl_optimizer_create ();
+	mcl_optimizer_set_dataset (opt, data);
+	mcl_optimizer_set_network (opt, net);
+	mcl_optimizer_set_learn_rate (opt, 0.01);
+
+	float acc;
+	float loss;
+	loss = mcl_optimizer_test_train (opt, 8, &acc);
+	//printf ("loss: %f acc: %f\n\n", loss, acc);
+	for (int i = 0; i < 10; i++) {
+		mcl_optimizer_train_sgd (opt, 4, 10);
+		loss = mcl_optimizer_test_train (opt, 16, &acc);
+		//printf ("%d\n", i);
+		//printf ("loss: %f acc: %f\n\n", loss, acc);
+	}
 }
 
 int main ()
 {
-	test_tensors ();
+	test_sgd ();
 	return 0;
 }

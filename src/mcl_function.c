@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include "mcl_tensor.h"
 #include "mcl_function.h"
 
@@ -71,10 +72,17 @@ void mcl_softmax (mcl_tensor *ten)
 {
 	int length = ten -> row * ten -> col;
 	float sum = 0;
+	float max = ten -> ten[0];
 	float *tmp = malloc (length * sizeof (float));
 
+	for (int i = 1; i < length; i++) {
+		if (max < ten -> ten[i]) {
+			max = ten -> ten[i];
+		}
+	}
+
 	for (int i = 0; i < length; i++) {
-		tmp[i] = exp (tmp[i]);
+		tmp[i] = exp (ten -> ten[i] - max);
 		sum += tmp[i];
 	}
 

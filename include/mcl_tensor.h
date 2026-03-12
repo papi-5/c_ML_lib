@@ -39,6 +39,8 @@ void mcl_tensor_mul_tr (mcl_tensor *left, mcl_tensor *right, mcl_tensor *res);
 
 void mcl_tensor_dropout (mcl_tensor *ten, float dropout);
 
+int mcl_tensor_argmax (mcl_tensor *ten);
+
 void mcl_tensor_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res);
 
 void mcl_tensor_add_multiply (mcl_tensor *ten_l, mcl_tensor *ten_r, mcl_tensor *res);

@@ -39,4 +39,8 @@ void mcl_optimizer_set_beta2 (mcl_optimizer *opt, float beta2);
 
 void mcl_optimizer_set_epsilon (mcl_optimizer *opt, float epsilon);
 
+float mcl_optimizer_test_train (mcl_optimizer *opt, int batch_size, float *accuracy);
+
+void mcl_optimizer_train_sgd (mcl_optimizer *opt, int batch_size, int num_epochs);
+
 #endif

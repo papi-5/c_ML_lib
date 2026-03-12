@@ -108,6 +108,16 @@ void mcl_network_print_grad (mcl_network *net)
     }
 }
 
+void mcl_network_reset_grad (mcl_network *net)
+{
+    int length = net -> num_layers - 1;
+    mcl_layer **layers = net -> layers;
+
+    for (int i = 0; i < length; i++) {
+        mcl_layer_reset_grad (layers[i]);
+    }
+}
+
 void mcl_network_set_activations (mcl_network *net, int *act_funcs)
 {
     int length = net -> num_layers - 1;
@@ -149,6 +159,26 @@ void mcl_network_backward (mcl_network *net, mcl_tensor *input)
         mcl_layer_backward (layers[i], layers[i - 1] -> output, layers[i - 1] -> output_grad);
     }
     mcl_layer_backward (layers[0], input, NULL);
+}
+
+void mcl_network_scale_grad (mcl_network *net, float scalar)
+{
+    int length = net -> num_layers - 1;
+    mcl_layer **layers = net -> layers;
+
+    for (int i = 0; i < length; i++) {
+        mcl_layer_scale_grad (layers[i], scalar);
+    }
+}
+
+void mcl_network_apply_grad (mcl_network *net)
+{
+    int length = net -> num_layers - 1;
+    mcl_layer **layers =  net -> layers;
+
+    for (int i = 0; i < length; i++) {
+        mcl_layer_apply_grad (layers[i]);
+    }
 }
 
 void mcl_network_delete (mcl_network *net)

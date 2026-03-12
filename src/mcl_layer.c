@@ -7,12 +7,12 @@ mcl_layer* mcl_layer_create (int row, int col)
 	mcl_layer *lay = malloc (sizeof (mcl_layer));
 
 	lay -> weights = mcl_tensor_create (row, col);
-	lay -> biases = mcl_tensor_create (1, col);
-	lay -> output = mcl_tensor_create (1, col);
+	lay -> biases = mcl_tensor_create (row, 1);
+	lay -> output = mcl_tensor_create (row, 1);
 	lay -> weight_grad = mcl_tensor_create (row, col);
-	lay -> bias_grad = mcl_tensor_create (1, col);
-	lay -> delta = mcl_tensor_create (1, col);
-	lay -> output_grad = mcl_tensor_create (1, col);
+	lay -> bias_grad = mcl_tensor_create (row, 1);
+	lay -> delta = mcl_tensor_create (row, 1);
+	lay -> output_grad = mcl_tensor_create (row, 1);
 
 	return lay;
 }
@@ -65,8 +65,15 @@ void mcl_layer_print (mcl_layer *lay)
 	mcl_tensor_print (lay -> biases);
 }
 
+void mcl_layer_reset_grad (mcl_layer *lay)
+{
+	mcl_tensor_reset (lay -> weight_grad);
+	mcl_tensor_reset (lay -> bias_grad);
+}
+
 void mcl_layer_forward_train (mcl_layer *lay, mcl_tensor *input, float dropout)
 {
+	mcl_tensor_reset (lay -> output);
 	mcl_tensor_mul (lay -> weights, input, lay -> output);
 	mcl_tensor_add (lay -> output, lay -> biases);
 	lay -> activation -> function (lay -> output);
@@ -75,6 +82,7 @@ void mcl_layer_forward_train (mcl_layer *lay, mcl_tensor *input, float dropout)
 
 void mcl_layer_forward_test (mcl_layer *lay, mcl_tensor *input)
 {
+	mcl_tensor_reset (lay -> output);
 	mcl_tensor_mul (lay -> weights, input, lay -> output);
 	mcl_tensor_add (lay -> output, lay -> biases);
 	lay -> activation -> function (lay -> output);
@@ -86,9 +94,23 @@ void mcl_layer_backward (mcl_layer *lay, mcl_tensor *input, mcl_tensor *output_g
 	mcl_tensor_mul_elem (lay -> delta, lay -> output_grad);
 	mcl_tensor_add (lay -> bias_grad, lay -> delta);
 	mcl_tensor_mul_tr (lay -> delta, input, lay -> weight_grad);
-	if (output_grad)
+	if (output_grad) {
+		mcl_tensor_reset (output_grad);
 		mcl_tensor_mul_tl (lay -> weights, lay -> delta, output_grad);
-}	
+	}
+}
+
+void mcl_layer_scale_grad (mcl_layer *lay, float scalar)
+{
+	mcl_tensor_scale (lay -> weight_grad, scalar);
+	mcl_tensor_scale (lay -> bias_grad, scalar);
+}
+
+void mcl_layer_apply_grad (mcl_layer *lay)
+{
+	mcl_tensor_add (lay -> weights, lay -> weight_grad);
+	mcl_tensor_add (lay -> biases, lay -> bias_grad);
+}
 
 void mcl_layer_delete (mcl_layer *lay)
 {
