@@ -12,7 +12,9 @@ mcl_tensor* mcl_tensor_create (int row, int col)
 
 	ten -> row = row;
 	ten -> col = col;
-	ten -> ten = aligned_alloc (64, (row * col) * sizeof (float));
+	size_t aligned_size = (row * col) * sizeof (float);
+	aligned_size = (aligned_size + 63) & ~63;
+	ten -> ten = aligned_alloc (64, aligned_size);
 
 	return ten;
 }
@@ -264,6 +266,22 @@ void mcl_tensor_dropout (mcl_tensor *ten, float dropout)
 			ten -> ten[i] = 0;
 		}
 	}
+}
+
+int mcl_tensor_argmax (mcl_tensor *ten)
+{
+	int length = ten -> row * ten -> col;
+	float argmax = ten -> ten[0];
+	int res = 0;
+
+	for (int i = 1; i < length; i++) {
+		if (argmax < ten -> ten[i]) {
+			argmax = ten -> ten[i];
+			res = i;
+		}
+	}
+
+	return res;
 }
 
 static float tensor_dot (mcl_tensor *ten_l, mcl_tensor *ten_r, int row, int col)

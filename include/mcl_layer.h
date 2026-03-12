@@ -29,11 +29,17 @@ void mcl_layer_biases_rand_normal (mcl_layer *lay, float mean, float stddev);
 
 void mcl_layer_print (mcl_layer *lay);
 
+void mcl_layer_reset_grad (mcl_layer *lay);
+
 void mcl_layer_forward_train (mcl_layer *lay, mcl_tensor *input, float dropout);
 
 void mcl_layer_forward_test (mcl_layer *lay, mcl_tensor *input);
 
 void mcl_layer_backward (mcl_layer *lay, mcl_tensor *input, mcl_tensor *output_grad);
+
+void mcl_layer_scale_grad (mcl_layer *lay, float scalar);
+
+void mcl_layer_apply_grad (mcl_layer *lay);
 
 void mcl_layer_delete (mcl_layer *lay);
 
