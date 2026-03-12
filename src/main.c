@@ -119,11 +119,11 @@ void test_dataset ()
 
 	mcl_dataset *data0 = mcl_dataset_create (4, 2, 0);
 	mcl_dataset *data1 = mcl_dataset_create (4, 2, 1);
-	mcl_dataset_load_train (data0, "test0.csv");
+	mcl_dataset_load_train (data0, "dataset/test0.csv");
 	data_print (data0 -> train, data0 -> train_size);
-	mcl_dataset_load_test (data0, "test0.csv");
+	mcl_dataset_load_test (data0, "dataset/test0.csv");
 	data_print (data0 -> test, data0 -> test_size);
-	mcl_dataset_load_split (data1, "test1.csv", 0.8);
+	mcl_dataset_load_split (data1, "dataset/test1.csv", 0.8);
 	data_print (data1 -> test, data1 -> test_size);
 }
 
@@ -142,34 +142,44 @@ void test_forward ()
 
 void test_sgd ()
 {
-	int neurons[] = {4, 4, 2, 2};
-	int activation[] = {0, 0, 0};
+	int neurons[] = {4, 16, 16, 2};
+	int activation[] = {1, 1, 0};
 	mcl_network *net = mcl_network_create (neurons, 4);
 	mcl_network_set_activations (net, activation);
 	mcl_network_init_xavier_normal (net);
 
-	mcl_network_print (net);
-	mcl_network_print_meta (net);
-	mcl_network_print_grad (net);
+	//mcl_network_print (net);
+	//mcl_network_print_meta (net);
+	//mcl_network_print_grad (net);
 
 	mcl_dataset *data = mcl_dataset_create (4, 2, 0);
-	mcl_dataset_load_split (data, "test0.csv", 0.8);
+	mcl_dataset_load_train (data, "dataset/test0.csv");
+	mcl_dataset_load_test (data, "dataset/test0.csv");
+
+	int train_size = mcl_dataset_train_samples (data);
+	int test_size = mcl_dataset_test_samples (data);
+	printf ("train samples: %d test samples: %d\n\n", train_size, test_size);
 
 	mcl_optimizer *opt = mcl_optimizer_create ();
 	mcl_optimizer_set_dataset (opt, data);
 	mcl_optimizer_set_network (opt, net);
-	mcl_optimizer_set_learn_rate (opt, 0.01);
+	mcl_optimizer_set_learn_rate (opt, 0.2);
 
 	float acc;
 	float loss;
-	loss = mcl_optimizer_test_train (opt, 8, &acc);
-	//printf ("loss: %f acc: %f\n\n", loss, acc);
+	loss = mcl_optimizer_test_train (opt, 16, &acc);
+	printf ("loss: %f acc: %f\n\n", loss, acc);
+	mcl_optimizer_train_sgd (opt, 16, 1);
+	loss = mcl_optimizer_test_train (opt, 16, &acc);
+	printf ("loss: %f acc: %f\n\n", loss, acc);
 	for (int i = 0; i < 10; i++) {
-		mcl_optimizer_train_sgd (opt, 4, 10);
+		mcl_optimizer_train_sgd (opt, 16, 200);
 		loss = mcl_optimizer_test_train (opt, 16, &acc);
-		//printf ("%d\n", i);
-		//printf ("loss: %f acc: %f\n\n", loss, acc);
+		printf ("%d\n", i);
+		printf ("loss: %f acc: %f\n\n", loss, acc);
 	}
+	loss = mcl_optimizer_test (opt, 16, &acc);
+	printf ("test\nloss: %f acc: %f\n\n", loss, acc);
 }
 
 int main ()

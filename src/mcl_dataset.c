@@ -174,6 +174,16 @@ void mcl_dataset_shuffle (mcl_tensor **data_points, int data_size)
     }
 }
 
+int mcl_dataset_train_samples (mcl_dataset *data)
+{
+    return data -> train_size;
+}
+
+int mcl_dataset_test_samples (mcl_dataset *data)
+{
+    return data -> test_size;
+}
+
 void mcl_dataset_delete (mcl_dataset *data)
 {
     if (data == NULL)

@@ -23,6 +23,10 @@ void mcl_dataset_load_split (mcl_dataset *data, const char *path, float ratio);
 
 void mcl_dataset_shuffle (mcl_tensor **data_points, int data_size);
 
+int mcl_dataset_train_samples (mcl_dataset *data);
+
+int mcl_dataset_test_samples (mcl_dataset *data);
+
 void mcl_dataset_delete (mcl_dataset *data);
 
 #endif
