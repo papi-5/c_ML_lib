@@ -3,6 +3,19 @@
 
 #include "mcl_tensor.h"
 
+typedef enum {
+	MCL_SIGMOID,
+	MCL_TANH,
+	MCL_RELU,
+	MCL_SOFTMAX,
+	MCL_LINEAR
+} mcl_activation_type;
+
+typedef enum {
+	MCL_MSE,
+	MCL_CROSS_ENTROPY
+} mcl_cost_type;
+
 typedef struct mcl_activation {
 	void (*function) (mcl_tensor*);
 	void (*function_d) (mcl_tensor*, mcl_tensor*);
@@ -28,6 +41,10 @@ void mcl_relu_d (mcl_tensor *ten, mcl_tensor *res);
 void mcl_softmax (mcl_tensor *ten);
 
 void mcl_softmax_d (mcl_tensor *ten, mcl_tensor *res);
+
+void mcl_linear (mcl_tensor *ten);
+
+void mcl_linear_d (mcl_tensor *ten, mcl_tensor *res);
 
 float mcl_mse (mcl_tensor *ten, mcl_tensor *y);
 

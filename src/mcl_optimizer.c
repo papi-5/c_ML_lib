@@ -11,7 +11,7 @@ mcl_optimizer* mcl_optimizer_create ()
 {
     mcl_optimizer *opt = malloc (sizeof (mcl_optimizer));
 
-    opt -> cost_id = 0;
+    opt -> cost_id = MCL_MSE;
     opt -> cost = &(cost_functions[0]);
     opt -> dropout = 0;
     opt -> beta1 = 0.9;
@@ -31,7 +31,7 @@ void mcl_optimizer_set_network (mcl_optimizer *opt, mcl_network *net)
     opt -> net = net;
 }
 
-void mcl_optimizer_set_cost (mcl_optimizer *opt, int cost_id)
+void mcl_optimizer_set_cost (mcl_optimizer *opt, mcl_cost_type cost_id)
 {
     opt -> cost = &(cost_functions[cost_id]);
     opt -> cost_id = cost_id;
@@ -147,7 +147,7 @@ void mcl_optimizer_train_sgd (mcl_optimizer *opt, int batch_size, int num_epochs
         
         for (int j = 0; j < train_size; j += batch_size) {
             int b_size = train_size - j < batch_size ? train_size - j : batch_size;
-            train_batch (opt, &(dataset_train[j]), b_size);
+            train_batch (opt, &(dataset_train[j * 2]), b_size);
         }
     }
 }

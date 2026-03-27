@@ -10,7 +10,7 @@ typedef struct mcl_optimizer {
     mcl_network *net;
     mcl_dataset *data;
     mcl_cost *cost;
-    int cost_id;
+    mcl_cost_type cost_id;
     float learn_rate;
     float dropout;
     float beta1;
@@ -27,7 +27,7 @@ void mcl_optimizer_set_dataset (mcl_optimizer *opt, mcl_dataset *data);
 
 void mcl_optimizer_set_network (mcl_optimizer *opt, mcl_network *net);
 
-void mcl_optimizer_set_cost (mcl_optimizer *opt, int cost_id);
+void mcl_optimizer_set_cost (mcl_optimizer *opt, mcl_cost_type cost_id);
 
 void mcl_optimizer_set_learn_rate (mcl_optimizer *opt, float learn_rate);
 

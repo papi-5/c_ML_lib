@@ -6,12 +6,13 @@
 
 #define BUFFER_SIZE 8192
 
-mcl_dataset* mcl_dataset_create (int input_size, int output_size, int label_position)
+mcl_dataset* mcl_dataset_create (mcl_task_type task, mcl_label_position label_position, int input_size, int output_size)
 {
     mcl_dataset *data = malloc(sizeof (mcl_dataset));
 
     data -> input_size = input_size;
     data -> output_size = output_size;
+    data -> task = task;
     data -> label_position = label_position;
 
     return data;
@@ -24,28 +25,43 @@ static void one_hot_code_parse (mcl_tensor *ten, int output_size, int val)
     }
 }
 
+static void regression_parse (mcl_tensor *ten, int output_size, char **token)
+{
+    for (int i = 0; i < output_size; i++) {
+        float val = atof (*token);
+        ten -> ten[i] = val;
+        *token = strtok (NULL, ",");
+    }
+}
+
 static void line_parse_csv (mcl_dataset *data, mcl_tensor **data_point, char *line)
 {
     int input_size = data -> input_size;
     int output_size = data -> output_size;
+    mcl_task_type task = data -> task;
+    mcl_label_position label_position = data -> label_position;
 
-    if (data -> label_position) {
-        char *token = strtok (line, ",");
-        for (int i = 0; i < input_size; i++) {
-            float val = atof (token);
-            data_point[0] -> ten[i] = val;
+    char *token = strtok (line, ",");
+    if (label_position == MCL_FIRST) {
+        if (task == MCL_CLASSIFICATION) {
+            int val = atoi (token);
+            one_hot_code_parse (data_point[1], output_size, val);
             token = strtok (NULL, ",");
+        } else if (task == MCL_REGRESSION) {
+            regression_parse (data_point[1], output_size, &token);
         }
-        int val = atoi (token);
-        one_hot_code_parse (data_point[1], output_size, val);
-    } else {
-        char *token = strtok (line, ",");
-        int val = atoi (token);
-        one_hot_code_parse (data_point[1], output_size, val);
-        for (int i = 0; i < input_size; i++) {
-            token = strtok (NULL, ",");
-            float val = atof (token);
-            data_point[0] -> ten[i] = val;
+    }
+    for (int i = 0; i < input_size; i++) {
+        float val = atof (token);
+        data_point[0] -> ten[i] = val;
+        token = strtok (NULL, ",");
+    }
+    if (label_position == MCL_LAST) {
+        if (task == MCL_CLASSIFICATION) {
+            int val = atoi (token);
+            one_hot_code_parse (data_point[1], output_size, val);
+        } else if (task == MCL_REGRESSION) {
+            regression_parse (data_point[1], output_size, &token);
         }
     }
 }
