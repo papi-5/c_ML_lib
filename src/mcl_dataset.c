@@ -18,11 +18,9 @@ mcl_dataset* mcl_dataset_create (mcl_task_type task, mcl_label_position label_po
     return data;
 }
 
-static void one_hot_code_parse (mcl_tensor *ten, int output_size, int val)
+static void one_hot_code_parse (mcl_tensor *ten, int val)
 {
-    for (int i = 0; i < output_size; i++) {
-        ten -> ten[i] = (i == val) ? 1 : 0;
-    }
+    ten -> ten[val] = 1.0f;
 }
 
 static void regression_parse (mcl_tensor *ten, int output_size, char **token)
@@ -45,7 +43,7 @@ static void line_parse_csv (mcl_dataset *data, mcl_tensor **data_point, char *li
     if (label_position == MCL_FIRST) {
         if (task == MCL_CLASSIFICATION) {
             int val = atoi (token);
-            one_hot_code_parse (data_point[1], output_size, val);
+            one_hot_code_parse (data_point[1], val);
             token = strtok (NULL, ",");
         } else if (task == MCL_REGRESSION) {
             regression_parse (data_point[1], output_size, &token);
@@ -59,7 +57,7 @@ static void line_parse_csv (mcl_dataset *data, mcl_tensor **data_point, char *li
     if (label_position == MCL_LAST) {
         if (task == MCL_CLASSIFICATION) {
             int val = atoi (token);
-            one_hot_code_parse (data_point[1], output_size, val);
+            one_hot_code_parse (data_point[1], val);
         } else if (task == MCL_REGRESSION) {
             regression_parse (data_point[1], output_size, &token);
         }
