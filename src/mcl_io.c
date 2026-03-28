@@ -72,7 +72,7 @@ void mcl_network_export (mcl_network *net, const char *path)
 
     fwrite (&(net -> num_layers), sizeof (int), 1, file);
     fwrite (net -> neurons, sizeof (int), length, file);
-    fwrite (net -> act_ids, sizeof (int), length - 1, file);
+    fwrite (net -> act_ids, sizeof (mcl_activation_type), length - 1, file);
 
     for (int i = 0; i < length - 1; i++) {
         int size = layers[i] -> weights -> row * layers[i] -> weights -> col;
@@ -97,10 +97,10 @@ mcl_network* mcl_network_import (const char *path)
     fread (&length, sizeof (int), 1, file);
 
     int *neurons = malloc (sizeof (int) * length);
-    int *act_ids = malloc (sizeof (int) * (length - 1));
+    mcl_activation_type *act_ids = malloc (sizeof (mcl_activation_type) * (length - 1));
 
     fread (neurons, sizeof (int), length, file);
-    fread (act_ids, sizeof (int), length - 1, file);
+    fread (act_ids, sizeof (mcl_activation_type), length - 1, file);
 
     mcl_network *net = mcl_network_create (neurons, length);
 

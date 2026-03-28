@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <immintrin.h>
 #include "mcl_tensor.h"
@@ -15,6 +16,7 @@ mcl_tensor* mcl_tensor_create (int row, int col)
 	size_t aligned_size = (row * col) * sizeof (float);
 	aligned_size = (aligned_size + 63) & ~63;
 	ten -> ten = aligned_alloc (64, aligned_size);
+	memset (ten -> ten, 0, aligned_size);
 
 	return ten;
 }

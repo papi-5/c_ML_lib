@@ -12,7 +12,7 @@ mcl_network* mcl_network_create (int *neurons, int num_layers)
 {
     mcl_network *net = malloc (sizeof (mcl_network));
     net -> layers = malloc (sizeof (mcl_layer*) * (num_layers - 1));
-    net -> act_ids = malloc (sizeof (int) * (num_layers - 1));
+    net -> act_ids = malloc (sizeof (mcl_activation_type) * (num_layers - 1));
     net -> neurons = malloc (sizeof (int) * num_layers);
 
     net -> num_layers = num_layers;
@@ -22,7 +22,7 @@ mcl_network* mcl_network_create (int *neurons, int num_layers)
 
     for (int i = 0; i < num_layers - 1; i++) {
         net -> layers[i] = mcl_layer_create(neurons[i + 1], neurons[i]);
-        net -> layers[i] -> activation = &(activation_functions[0]);
+        net -> layers[i] -> activation = &(activation_functions[MCL_SIGMOID]);
     }
 
     return net;
@@ -118,10 +118,10 @@ void mcl_network_reset_grad (mcl_network *net)
     }
 }
 
-void mcl_network_set_activations (mcl_network *net, int *act_funcs)
+void mcl_network_set_activations (mcl_network *net, mcl_activation_type *act_funcs)
 {
     int length = net -> num_layers - 1;
-    int *act_ids = net -> act_ids;
+    mcl_activation_type *act_ids = net -> act_ids;
     mcl_layer **layers = net -> layers;
 
     for (int i = 0; i < length; i++) {

@@ -8,7 +8,7 @@
 typedef struct mcl_network {
     mcl_layer **layers;
     int *neurons;
-    int *act_ids;
+    mcl_activation_type *act_ids;
     int num_layers;
 } mcl_network;
 
@@ -28,7 +28,7 @@ void mcl_network_print_grad (mcl_network *net);
 
 void mcl_network_reset_grad (mcl_network *net);
 
-void mcl_network_set_activations (mcl_network *net, int *act_funcs);
+void mcl_network_set_activations (mcl_network *net, mcl_activation_type *act_funcs);
 
 void mcl_network_forward_train (mcl_network *net, mcl_tensor *input, float dropout);
 

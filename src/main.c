@@ -117,8 +117,8 @@ void test_dataset ()
 		}
 	}
 
-	mcl_dataset *data0 = mcl_dataset_create (4, 2, 0);
-	mcl_dataset *data1 = mcl_dataset_create (4, 2, 1);
+	mcl_dataset *data0 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
+	mcl_dataset *data1 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_LAST, 4, 2);
 	mcl_dataset_load_train (data0, "dataset/test0.csv");
 	data_print (data0 -> train, data0 -> train_size);
 	mcl_dataset_load_test (data0, "dataset/test0.csv");
@@ -143,7 +143,7 @@ void test_forward ()
 void test_sgd ()
 {
 	int neurons[] = {4, 16, 16, 2};
-	int activation[] = {1, 1, 0};
+	mcl_activation_type activation[] = {MCL_TANH, MCL_TANH, MCL_SIGMOID};
 	mcl_network *net = mcl_network_create (neurons, 4);
 	mcl_network_set_activations (net, activation);
 	mcl_network_init_xavier_normal (net);
@@ -152,7 +152,7 @@ void test_sgd ()
 	//mcl_network_print_meta (net);
 	//mcl_network_print_grad (net);
 
-	mcl_dataset *data = mcl_dataset_create (4, 2, 0);
+	mcl_dataset *data = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
 	mcl_dataset_load_train (data, "dataset/test0.csv");
 	mcl_dataset_load_test (data, "dataset/test0.csv");
 

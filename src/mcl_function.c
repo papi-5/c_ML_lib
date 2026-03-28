@@ -4,12 +4,13 @@
 #include "mcl_function.h"
 
 mcl_activation activation_functions[] = {{mcl_sigmoid, mcl_sigmoid_d},
-									 {mcl_tanh, mcl_tanh_d},
-									 {mcl_relu, mcl_relu_d},
-									 {mcl_softmax, mcl_softmax_d}};
+									 	 {mcl_tanh, mcl_tanh_d},
+									 	 {mcl_relu, mcl_relu_d},
+									 	 {mcl_softmax, mcl_softmax_d},
+									 	 {mcl_linear, mcl_linear_d}};
 
 mcl_cost cost_functions[] = {{mcl_mse, mcl_mse_d},
-								{mcl_cross_entropy, mcl_cross_entropy_d}};
+							 {mcl_cross_entropy, mcl_cross_entropy_d}};
 
 void mcl_sigmoid (mcl_tensor *ten)
 {
@@ -103,6 +104,17 @@ void mcl_softmax_d (mcl_tensor *ten, mcl_tensor *res)
 			float y = (i == j) ? 1 - x : ten -> ten[j] * -1;
 			res -> ten[i] += x * y;
 		}
+	}
+}
+
+void mcl_linear (mcl_tensor *ten) {}
+
+void mcl_linear_d (mcl_tensor *ten, mcl_tensor *res)
+{
+	int length = ten -> row * ten -> col;
+
+	for (int i = 0; i < length; i++) {
+		res -> ten[i] = 1;
 	}
 }
 
