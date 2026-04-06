@@ -119,11 +119,11 @@ void test_dataset ()
 
 	mcl_dataset *data0 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
 	mcl_dataset *data1 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_LAST, 4, 2);
-	mcl_dataset_load_train (data0, "dataset/test0.csv");
+	mcl_dataset_load_train (data0, "dataset/xor4_0.csv");
 	data_print (data0 -> train, data0 -> train_size);
-	mcl_dataset_load_test (data0, "dataset/test0.csv");
+	mcl_dataset_load_test (data0, "dataset/xor4_0.csv");
 	data_print (data0 -> test, data0 -> test_size);
-	mcl_dataset_load_split (data1, "dataset/test1.csv", 0.8);
+	mcl_dataset_load_split (data1, "dataset/xor4_1.csv", 0.8);
 	data_print (data1 -> test, data1 -> test_size);
 }
 
@@ -140,7 +140,7 @@ void test_forward ()
 	mcl_tensor_print (net -> layers[2] -> output);
 }
 
-void test_sgd ()
+mcl_network* get_net_xor ()
 {
 	int neurons[] = {4, 16, 16, 2};
 	mcl_activation_type activation[] = {MCL_TANH, MCL_TANH, MCL_SIGMOID};
@@ -148,13 +148,27 @@ void test_sgd ()
 	mcl_network_set_activations (net, activation);
 	mcl_network_init_xavier_normal (net);
 
+	return net;
+}
+
+mcl_dataset* get_data_xor ()
+{
+	mcl_dataset *data = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
+	mcl_dataset_load_train (data, "dataset/xor4_0.csv");
+	mcl_dataset_load_test (data, "dataset/xor4_0.csv");
+
+	return data;
+}
+
+void test_sgd ()
+{
+	mcl_network *net = get_net_xor ();
+
 	//mcl_network_print (net);
 	//mcl_network_print_meta (net);
 	//mcl_network_print_grad (net);
 
-	mcl_dataset *data = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
-	mcl_dataset_load_train (data, "dataset/test0.csv");
-	mcl_dataset_load_test (data, "dataset/test0.csv");
+	mcl_dataset *data = get_data_xor ();
 
 	int train_size = mcl_dataset_train_samples (data);
 	int test_size = mcl_dataset_test_samples (data);
@@ -165,12 +179,11 @@ void test_sgd ()
 	mcl_optimizer_set_network (opt, net);
 	mcl_optimizer_set_learn_rate (opt, 0.2);
 
-	float acc;
-	float loss;
+	float acc, loss;
 	loss = mcl_optimizer_test_train (opt, 16, &acc);
 	printf ("loss: %f acc: %f\n\n", loss, acc);
-	mcl_optimizer_train_sgd (opt, 16, 1);
-	loss = mcl_optimizer_test_train (opt, 16, &acc);
+	//mcl_optimizer_train_sgd (opt, 16, 1);
+	//loss = mcl_optimizer_test_train (opt, 16, &acc);
 	printf ("loss: %f acc: %f\n\n", loss, acc);
 	for (int i = 0; i < 10; i++) {
 		mcl_optimizer_train_sgd (opt, 16, 200);
@@ -178,12 +191,32 @@ void test_sgd ()
 		printf ("%d\n", i);
 		printf ("loss: %f acc: %f\n\n", loss, acc);
 	}
-	loss = mcl_optimizer_test (opt, 16, &acc);
-	printf ("test\nloss: %f acc: %f\n\n", loss, acc);
+}
+
+void test_adam ()
+{
+	mcl_network *net = get_net_xor ();
+	mcl_dataset *data = get_data_xor ();
+
+	mcl_optimizer *opt = mcl_optimizer_create ();
+	mcl_optimizer_set_dataset (opt, data);
+	mcl_optimizer_set_network (opt, net);
+	mcl_optimizer_set_learn_rate (opt, 0.01);
+
+	float acc, cost;
+	
+	cost = mcl_optimizer_test_train (opt, 16, &acc);
+	printf ("cost: %f acc: %f\n\n", cost, acc);
+	for (int i = 0; i < 10; i++) {
+		mcl_optimizer_train_adam (opt, 16, 20);
+		cost = mcl_optimizer_test_train (opt, 16, &acc);
+		printf ("%d\n", i);
+		printf ("cost: %f acc: %f\n\n", cost, acc);
+	}
 }
 
 int main ()
 {
-	test_sgd ();
+	test_adam ();
 	return 0;
 }
