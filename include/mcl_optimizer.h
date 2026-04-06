@@ -45,4 +45,6 @@ float mcl_optimizer_test (mcl_optimizer *opt, int batch_size, float *accuracy);
 
 void mcl_optimizer_train_sgd (mcl_optimizer *opt, int batch_size, int num_epochs);
 
+void mcl_optimizer_train_adam (mcl_optimizer *opt, int batch_size, int num_epochs);
+
 #endif
