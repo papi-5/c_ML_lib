@@ -98,16 +98,13 @@ void mcl_softmax_d (mcl_tensor *ten, mcl_tensor *res)
 	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++) {
-		res -> ten[i] = 0;
-		float x = ten -> ten[i];
-		for (int j = 0; j < length; j++) {
-			float y = (i == j) ? 1 - x : ten -> ten[j] * -1;
-			res -> ten[i] += x * y;
-		}
+		res -> ten[i] = 1;
 	}
 }
 
-void mcl_linear (mcl_tensor *ten) {}
+void mcl_linear (mcl_tensor *ten) {
+	(void)ten;
+}
 
 void mcl_linear_d (mcl_tensor *ten, mcl_tensor *res)
 {
@@ -147,7 +144,7 @@ float mcl_cross_entropy (mcl_tensor *ten, mcl_tensor *y)
 	float res = 0;
 
 	for (int i = 0; i < length; i++)
-		res += y -> ten[i] * log (ten -> ten[i]);
+		res += y -> ten[i] * log (ten -> ten[i] + 1e-7f);
 
 	res *= -1.0;
 
@@ -159,5 +156,5 @@ void mcl_cross_entropy_d (mcl_tensor *ten, mcl_tensor *y, mcl_tensor *res)
 	int length = ten -> row * ten -> col;
 
 	for (int i = 0; i < length; i++)
-		res -> ten[i] = -1.0 * (y -> ten[i] / ten -> ten[i]);
+		res -> ten[i] = ten -> ten[i] - y -> ten[i];
 }

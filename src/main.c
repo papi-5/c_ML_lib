@@ -120,11 +120,16 @@ void test_dataset ()
 	mcl_dataset *data0 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 4, 2);
 	mcl_dataset *data1 = mcl_dataset_create (MCL_CLASSIFICATION, MCL_LAST, 4, 2);
 	mcl_dataset_load_train (data0, "dataset/xor4_0.csv");
-	data_print (data0 -> train, data0 -> train_size);
+	//data_print (data0 -> train, data0 -> train_size);
 	mcl_dataset_load_test (data0, "dataset/xor4_0.csv");
-	data_print (data0 -> test, data0 -> test_size);
+	//data_print (data0 -> test, data0 -> test_size);
 	mcl_dataset_load_split (data1, "dataset/xor4_1.csv", 0.8);
-	data_print (data1 -> test, data1 -> test_size);
+	//data_print (data1 -> test, data1 -> test_size);
+
+	mcl_dataset *data_reg_0 = mcl_dataset_create (MCL_REGRESSION, MCL_FIRST, 1, 1);
+	mcl_dataset_load_split (data_reg_0, "dataset/regression_0.csv", 0.995);
+	printf ("train size: %d test size: %d\n\n", data_reg_0 -> train_size, data_reg_0 -> test_size);
+	data_print (data_reg_0 -> test, data_reg_0 -> test_size);
 }
 
 void test_forward ()
@@ -140,6 +145,15 @@ void test_forward ()
 	mcl_tensor_print (net -> layers[2] -> output);
 }
 
+mcl_optimizer* get_opt (mcl_network *net, mcl_dataset *data)
+{
+	mcl_optimizer *opt = mcl_optimizer_create ();
+	mcl_optimizer_set_dataset (opt, data);
+	mcl_optimizer_set_network (opt, net);
+
+	return opt;
+}
+
 mcl_network* get_net_xor ()
 {
 	int neurons[] = {4, 16, 16, 2};
@@ -147,6 +161,50 @@ mcl_network* get_net_xor ()
 	mcl_network *net = mcl_network_create (neurons, 4);
 	mcl_network_set_activations (net, activation);
 	mcl_network_init_xavier_normal (net);
+
+	return net;
+}
+
+mcl_network* get_net_reg ()
+{
+	int neurons[] = {1, 16, 16, 1};
+	mcl_activation_type activation[] = {MCL_TANH, MCL_TANH, MCL_LINEAR};
+	mcl_network *net = mcl_network_create (neurons, 4);
+	mcl_network_set_activations (net, activation);
+	mcl_network_init_xavier_normal (net);
+
+	return net;
+}
+
+mcl_network* get_net_iris ()
+{
+	int neurons[] = {4, 8, 3};
+	mcl_activation_type activation[] = {MCL_TANH, MCL_SOFTMAX};
+	mcl_network *net = mcl_network_create (neurons, 3);
+	mcl_network_set_activations (net, activation);
+	mcl_network_init_kaiming (net);
+
+	return net;
+}
+
+mcl_network* get_net_mnist ()
+{
+	int neurons[] = {784, 128, 64, 10};
+	mcl_activation_type activation[] = {MCL_RELU, MCL_RELU, MCL_SOFTMAX};
+	mcl_network *net = mcl_network_create (neurons, 4);
+	mcl_network_set_activations (net, activation);
+	mcl_network_init_kaiming (net);
+
+	return net;
+}
+
+mcl_network* get_net_boston ()
+{
+	int neurons[] = {13, 64, 32, 1};
+	mcl_activation_type activation[] = {MCL_RELU, MCL_RELU, MCL_LINEAR};
+	mcl_network *net = mcl_network_create (neurons, 4);
+	mcl_network_set_activations (net, activation);
+	mcl_network_init_kaiming (net);
 
 	return net;
 }
@@ -160,63 +218,173 @@ mcl_dataset* get_data_xor ()
 	return data;
 }
 
-void test_sgd ()
+mcl_dataset* get_data_reg ()
 {
-	mcl_network *net = get_net_xor ();
+	mcl_dataset *data = mcl_dataset_create (MCL_REGRESSION, MCL_FIRST, 1, 1);
+	mcl_dataset_load_split (data, "dataset/regression_0.csv", 0.8);
 
-	//mcl_network_print (net);
-	//mcl_network_print_meta (net);
-	//mcl_network_print_grad (net);
-
-	mcl_dataset *data = get_data_xor ();
-
-	int train_size = mcl_dataset_train_samples (data);
-	int test_size = mcl_dataset_test_samples (data);
-	printf ("train samples: %d test samples: %d\n\n", train_size, test_size);
-
-	mcl_optimizer *opt = mcl_optimizer_create ();
-	mcl_optimizer_set_dataset (opt, data);
-	mcl_optimizer_set_network (opt, net);
-	mcl_optimizer_set_learn_rate (opt, 0.2);
-
-	float acc, loss;
-	loss = mcl_optimizer_test_train (opt, 16, &acc);
-	printf ("loss: %f acc: %f\n\n", loss, acc);
-	//mcl_optimizer_train_sgd (opt, 16, 1);
-	//loss = mcl_optimizer_test_train (opt, 16, &acc);
-	printf ("loss: %f acc: %f\n\n", loss, acc);
-	for (int i = 0; i < 10; i++) {
-		mcl_optimizer_train_sgd (opt, 16, 200);
-		loss = mcl_optimizer_test_train (opt, 16, &acc);
-		printf ("%d\n", i);
-		printf ("loss: %f acc: %f\n\n", loss, acc);
-	}
+	return data;
 }
 
-void test_adam ()
+mcl_dataset* get_data_iris ()
 {
-	mcl_network *net = get_net_xor ();
-	mcl_dataset *data = get_data_xor ();
+	mcl_dataset *data = mcl_dataset_create (MCL_CLASSIFICATION, MCL_LAST, 4, 3);
+	mcl_dataset_load_split (data, "dataset/iris_clean.csv", 0.8);
 
-	mcl_optimizer *opt = mcl_optimizer_create ();
-	mcl_optimizer_set_dataset (opt, data);
-	mcl_optimizer_set_network (opt, net);
-	mcl_optimizer_set_learn_rate (opt, 0.01);
+	return data;
+}
+
+mcl_dataset* get_data_mnist ()
+{
+	mcl_dataset *data = mcl_dataset_create (MCL_CLASSIFICATION, MCL_FIRST, 784, 10);
+	//mcl_dataset_load_split (data, "dataset/mnist_train.csv", 0.1);
+	mcl_dataset_load_train (data, "dataset/mnist_train.csv");
+	mcl_dataset_load_test (data, "dataset/mnist_test.csv");
+
+	return data;
+}
+mcl_dataset* get_data_boston ()
+{
+	mcl_dataset *data = mcl_dataset_create (MCL_REGRESSION, MCL_LAST, 13, 1);
+	mcl_dataset_load_split (data, "dataset/boston_housing.csv", 0.8);
+
+	return data;
+}
+
+void run_test (mcl_optimizer *opt, float learn_rate, int batch_size, int epochs, int algorithm)
+{
+	mcl_optimizer_set_learn_rate (opt, learn_rate);
+
+	int train_size = mcl_dataset_train_samples (opt -> data);
+	int test_size = mcl_dataset_test_samples (opt -> data);
+	printf ("train samples: %d test samples: %d\n", train_size, test_size);
+
+	int input_size = mcl_dataset_input_size (opt -> data);
+	int output_size = mcl_dataset_output_size (opt -> data);
+	printf ("input size: %d output size: %d\n", input_size, output_size);
+
+	if (algorithm)
+		printf ("optimization algorithm: ADAM\n");
+	else
+		printf ("optimization algorithm: SGD\n");
+
+	printf ("\n");
+	printf ("=====\n\n");
 
 	float acc, cost;
 	
-	cost = mcl_optimizer_test_train (opt, 16, &acc);
+	cost = mcl_optimizer_test_train (opt, batch_size, &acc);
 	printf ("cost: %f acc: %f\n\n", cost, acc);
 	for (int i = 0; i < 10; i++) {
-		mcl_optimizer_train_adam (opt, 16, 20);
-		cost = mcl_optimizer_test_train (opt, 16, &acc);
-		printf ("%d\n", i);
+		if (algorithm == 0)
+			mcl_optimizer_train_sgd (opt, batch_size, epochs);
+		else
+			mcl_optimizer_train_adam (opt, batch_size, epochs);
+		cost = mcl_optimizer_test_train (opt, batch_size, &acc);
+		printf ("%d\n", (i + 1) * epochs);
 		printf ("cost: %f acc: %f\n\n", cost, acc);
 	}
+	printf ("=====\n\n");
+
+	printf ("test\n");
+	cost = mcl_optimizer_test (opt, batch_size, &acc);
+	printf ("cost: %f acc: %f\n\n", cost, acc);
+	printf ("=====\n\n");
+}
+
+void test_xor_sgd ()
+{
+	printf ("4-BIT XOR\n");
+	mcl_network *net = get_net_xor ();
+	mcl_dataset *data = get_data_xor ();
+	mcl_optimizer *opt = get_opt (net, data);
+	run_test (opt, 0.2, 16, 250, 0);
+}
+
+void test_xor_adam ()
+{
+	printf ("4-BIT XOR\n");
+	mcl_network *net = get_net_xor ();
+	mcl_dataset *data = get_data_xor ();
+	mcl_optimizer *opt = get_opt (net, data);
+	run_test (opt, 0.001, 16, 25, 1);
+}
+
+void test_reg_sgd ()
+{
+	printf ("SIMPLE REGRESSION\n");
+	mcl_network *net = get_net_reg ();
+	mcl_dataset *data = get_data_reg ();
+	mcl_optimizer *opt = get_opt (net, data);
+	run_test (opt, 0.01, 100, 100, 0);
+}
+
+void test_reg_adam ()
+{
+	printf ("SIMPLE REGRESSION\n");
+	mcl_network *net = get_net_reg ();
+	mcl_dataset *data = get_data_reg ();
+	mcl_optimizer *opt = get_opt (net, data);
+	run_test (opt, 0.001, 100, 10, 1);
+}
+
+void test_iris_sgd ()
+{
+	printf ("IRIS\n");
+	mcl_network *net = get_net_iris ();
+	mcl_dataset *data = get_data_iris ();
+	mcl_optimizer *opt = get_opt (net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	run_test (opt, 0.01, 50, 20, 0);
+}
+
+void test_iris_adam ()
+{
+	printf ("IRIS\n");
+	mcl_network *net = get_net_iris ();
+	mcl_dataset *data = get_data_iris ();
+	mcl_optimizer *opt = get_opt (net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	run_test (opt, 0.001, 50, 2, 1);
+}
+
+void test_mnist_adam ()
+{
+	printf ("MNIST\n");
+	mcl_network *net = get_net_mnist ();
+	mcl_dataset *data = get_data_mnist ();
+	mcl_optimizer *opt = get_opt (net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	run_test (opt, 0.0001, 100, 2, 1);
+}
+
+void test_boston_adam ()
+{
+	printf ("BOSTON HOUSING\n");
+	mcl_network *net = get_net_boston ();
+	mcl_dataset *data = get_data_boston ();
+	mcl_optimizer *opt = get_opt (net, data);
+	run_test (opt, 0.0001, 32, 50, 1);
 }
 
 int main ()
 {
-	test_adam ();
+	printf ("\n");
+
+	//test_tensors ();
+	//test_multiplication_speed ();
+	//test_io ();
+	//test_dataset ();
+	//test_forward ();
+	
+	//test_xor_sgd ();
+	//test_xor_sgd ();
+	//test_reg_sgd ();
+	//test_reg_adam ();
+	//test_iris_sgd ();
+	//test_iris_adam ();
+	//test_mnist_adam ();
+	test_boston_adam ();
+
 	return 0;
 }

@@ -38,6 +38,10 @@ int mcl_dataset_train_samples (mcl_dataset *data);
 
 int mcl_dataset_test_samples (mcl_dataset *data);
 
+int mcl_dataset_input_size (mcl_dataset *data);
+
+int mcl_dataset_output_size (mcl_dataset *data);
+
 void mcl_dataset_delete (mcl_dataset *data);
 
 #endif
