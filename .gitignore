@@ -2,3 +2,7 @@
 main
 *.mcl
 *.csv
+!dataset/xor4*.csv
+!dataset/regression*.csv
+!dataset/iris_clean.csv
+!dataset/boston_housing.csv
