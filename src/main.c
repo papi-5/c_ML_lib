@@ -345,6 +345,7 @@ void test_iris_adam ()
 	mcl_dataset *data = get_data_iris ();
 	mcl_optimizer *opt = get_opt (net, data);
 	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	//mcl_optimizer_set_dropout (opt, 0.1);
 	run_test (opt, 0.001, 50, 2, 1);
 }
 
@@ -384,7 +385,7 @@ int main ()
 	//test_iris_sgd ();
 	//test_iris_adam ();
 	//test_mnist_adam ();
-	test_boston_adam ();
+	//test_boston_adam ();
 
 	return 0;
 }
