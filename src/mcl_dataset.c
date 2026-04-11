@@ -198,6 +198,16 @@ int mcl_dataset_test_samples (mcl_dataset *data)
     return data -> test_size;
 }
 
+int mcl_dataset_input_size (mcl_dataset *data)
+{
+    return data -> input_size;
+}
+
+int mcl_dataset_output_size (mcl_dataset *data)
+{
+    return data -> output_size;
+}
+
 void mcl_dataset_delete (mcl_dataset *data)
 {
     if (data == NULL)

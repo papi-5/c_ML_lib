@@ -72,24 +72,34 @@ float mcl_optimizer_test_train (mcl_optimizer *opt, int batch_size, float *accur
     int train_size = opt -> data -> train_size;
     mcl_tensor **dataset_train = opt -> data -> train;
     batch_size = train_size < batch_size ? train_size : batch_size;
+    mcl_task_type task = opt -> data -> task;
     mcl_network *net = opt -> net;
     mcl_tensor *output = net -> layers[net -> num_layers - 2] -> output;
     mcl_cost *cost = opt -> cost;
     float loss = 0;
     int correct = 0;
+    float rmse = 0;
 
     mcl_dataset_shuffle (dataset_train, train_size);
 
     for (int i = 0; i < batch_size; i++) {
         mcl_network_forward_test (net, dataset_train[i * 2]);
         loss += cost -> function (output, dataset_train[i * 2 + 1]);
-        if (mcl_tensor_argmax (output) == mcl_tensor_argmax (dataset_train[i * 2 + 1])) {
-            correct++;
+        if (task == MCL_CLASSIFICATION) {
+            if (mcl_tensor_argmax (output) == mcl_tensor_argmax (dataset_train[i * 2 + 1])) {
+                correct++;
+            }
+        }
+        else if (task == MCL_REGRESSION) {
+            rmse += sqrt (cost -> function (output, dataset_train[i * 2 + 1]));
         }
     }
 
     loss /= batch_size;
-    *accuracy = (float)correct / batch_size;
+    if (task == MCL_CLASSIFICATION)
+        *accuracy = (float)correct / batch_size;
+    else if (task == MCL_REGRESSION)
+        *accuracy = rmse / batch_size;
 
     return loss;
 }
@@ -99,24 +109,34 @@ float mcl_optimizer_test (mcl_optimizer *opt, int batch_size, float *accuracy)
     int test_size = opt -> data -> test_size;
     mcl_tensor **dataset_test = opt -> data -> test;
     batch_size = test_size < batch_size ? test_size : batch_size;
+    mcl_task_type task = opt -> data -> task;
     mcl_network *net = opt -> net;
     mcl_tensor *output = net -> layers[net -> num_layers - 2] -> output;
     mcl_cost *cost = opt -> cost;
     float loss = 0;
     int correct = 0;
+    float rmse = 0;
 
     mcl_dataset_shuffle (dataset_test, test_size);
 
     for (int i = 0; i < batch_size; i++) {
         mcl_network_forward_test (net, dataset_test[i * 2]);
         loss += cost -> function (output, dataset_test[i * 2 + 1]);
-        if (mcl_tensor_argmax (output) == mcl_tensor_argmax (dataset_test[i * 2 + 1])) {
-            correct++;
+        if (task == MCL_CLASSIFICATION) {
+            if (mcl_tensor_argmax (output) == mcl_tensor_argmax (dataset_test[i * 2 + 1])) {
+                correct++;
+            }
+        }
+        else if (task == MCL_REGRESSION) {
+            rmse += sqrt (cost -> function (output, dataset_test[i * 2 + 1]));
         }
     }
 
     loss /= batch_size;
-    *accuracy = (float)correct / batch_size;
+    if (task == MCL_CLASSIFICATION)
+        *accuracy = (float)correct / batch_size;
+    else if (task == MCL_REGRESSION)
+        *accuracy = rmse / batch_size;
 
     return loss;
 }
