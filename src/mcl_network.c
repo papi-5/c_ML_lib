@@ -23,6 +23,7 @@ mcl_network* mcl_network_create (int *neurons, int num_layers)
     for (int i = 0; i < num_layers - 1; i++) {
         net -> layers[i] = mcl_layer_create(neurons[i + 1], neurons[i]);
         net -> layers[i] -> activation = &(activation_functions[MCL_SIGMOID]);
+        net -> act_ids[i] = 0;
     }
 
     return net;

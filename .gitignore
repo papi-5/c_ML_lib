@@ -2,6 +2,7 @@
 main
 *.mcl
 *.csv
+*.txt
 !dataset/xor4*.csv
 !dataset/regression*.csv
 !dataset/iris_clean.csv
