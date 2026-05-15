@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "mcl_io.h"
-#include "mcl_optimizer.h"
+//#include "mcl_io.h"
+//#include "mcl_optimizer.h"
+#include "mcl.h"
 
 void test_tensors ()
 {
@@ -45,6 +46,13 @@ void test_tensors ()
 		}
 	}
 	//mcl_tensor_print (ten4);
+
+	mcl_tensor_delete (ten1);
+	mcl_tensor_delete (ten2);
+	mcl_tensor_delete (ten1t);
+	mcl_tensor_delete (ten2t);
+	mcl_tensor_delete (ten4);
+	mcl_tensor_delete (ten5);
 }
 
 void test_multiplication_speed ()
@@ -89,6 +97,10 @@ void test_multiplication_speed ()
 	mcl_tensor_mul (tena, tenb, res);
 	t = clock () - t;
 	printf ("time tiled: %f\n", ((double)t) / CLOCKS_PER_SEC);
+
+	mcl_tensor_delete (tena);
+	mcl_tensor_delete (tenb);
+	mcl_tensor_delete (res);
 }
 
 void test_io ()
@@ -97,15 +109,17 @@ void test_io ()
 	mcl_network *net = mcl_network_create (neurons, 4);
 
 	mcl_network_init_xavier_normal (net);
+
 	mcl_network_print (net);
 	mcl_network_print_meta (net);
 	printf ("network size: %ld bytes\n\n", mcl_network_size (net));
 
 	mcl_network_export (net, "test.mcl");
+
 	mcl_network *net2 = mcl_network_import ("test.mcl");
 	mcl_network_print (net2);
 	mcl_network_print_meta (net2);
-	printf ("network size: %ld bytes\n\n", mcl_network_size (net));
+	printf ("network size: %ld bytes\n\n", mcl_network_size (net2));
 }
 
 void test_dataset ()
@@ -182,7 +196,7 @@ mcl_network* get_net_iris ()
 	mcl_activation_type activation[] = {MCL_TANH, MCL_SOFTMAX};
 	mcl_network *net = mcl_network_create (neurons, 3);
 	mcl_network_set_activations (net, activation);
-	mcl_network_init_kaiming (net);
+	mcl_network_init_xavier_normal (net);
 
 	return net;
 }
@@ -263,10 +277,19 @@ void run_test (mcl_optimizer *opt, float learn_rate, int batch_size, int epochs,
 	int output_size = mcl_dataset_output_size (opt -> data);
 	printf ("input size: %d output size: %d\n", input_size, output_size);
 
-	if (algorithm)
-		printf ("optimization algorithm: ADAM\n");
-	else
-		printf ("optimization algorithm: SGD\n");
+	switch (algorithm) {
+		case 0:
+			printf ("optimization algorithm: SGD\n");
+			break;
+		case 1:
+			printf ("optimization algorithm: SGD with momentum\n");
+			break;
+		case 2:
+			printf ("optimization algorithm: RMSProp\n");
+			break;
+		case 3:
+			printf ("optimization algorithm: ADAM\n");
+	}
 
 	printf ("\n");
 	printf ("=====\n\n");
@@ -276,10 +299,19 @@ void run_test (mcl_optimizer *opt, float learn_rate, int batch_size, int epochs,
 	cost = mcl_optimizer_test_train (opt, batch_size, &acc);
 	printf ("cost: %f acc: %f\n\n", cost, acc);
 	for (int i = 0; i < 10; i++) {
-		if (algorithm == 0)
-			mcl_optimizer_train_sgd (opt, batch_size, epochs);
-		else
-			mcl_optimizer_train_adam (opt, batch_size, epochs);
+		switch (algorithm) {
+			case 0:
+				mcl_optimizer_train_sgd (opt, batch_size, epochs);
+				break;
+			case 1:
+				mcl_optimizer_train_sgd_m (opt, batch_size, epochs);
+				break;
+			case 2:
+				mcl_optimizer_train_rmsprop (opt, batch_size, epochs);
+				break;
+			case 3:
+				mcl_optimizer_train_adam (opt, batch_size, epochs);
+		}
 		cost = mcl_optimizer_test_train (opt, batch_size, &acc);
 		printf ("%d\n", (i + 1) * epochs);
 		printf ("cost: %f acc: %f\n\n", cost, acc);
@@ -307,7 +339,7 @@ void test_xor_adam ()
 	mcl_network *net = get_net_xor ();
 	mcl_dataset *data = get_data_xor ();
 	mcl_optimizer *opt = get_opt (net, data);
-	run_test (opt, 0.001, 16, 25, 1);
+	run_test (opt, 0.001, 16, 25, 3);
 }
 
 void test_reg_sgd ()
@@ -325,7 +357,7 @@ void test_reg_adam ()
 	mcl_network *net = get_net_reg ();
 	mcl_dataset *data = get_data_reg ();
 	mcl_optimizer *opt = get_opt (net, data);
-	run_test (opt, 0.001, 100, 10, 1);
+	run_test (opt, 0.001, 100, 10, 3);
 }
 
 void test_iris_sgd ()
@@ -335,7 +367,27 @@ void test_iris_sgd ()
 	mcl_dataset *data = get_data_iris ();
 	mcl_optimizer *opt = get_opt (net, data);
 	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
-	run_test (opt, 0.01, 50, 20, 0);
+	run_test (opt, 0.01, 50, 25, 0);
+}
+
+void test_iris_sgd_m ()
+{
+	printf ("IRIS\n");
+	mcl_network *net = get_net_iris ();
+	mcl_dataset *data = get_data_iris ();
+	mcl_optimizer *opt = get_opt(net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	run_test (opt, 0.01, 50, 10, 1);
+}
+
+void test_iris_rmsprop ()
+{
+	printf ("IRIS\n");
+	mcl_network *net = get_net_iris ();
+	mcl_dataset *data = get_data_iris ();
+	mcl_optimizer *opt = get_opt (net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	run_test (opt, 0.001, 50, 2, 2);
 }
 
 void test_iris_adam ()
@@ -346,7 +398,7 @@ void test_iris_adam ()
 	mcl_optimizer *opt = get_opt (net, data);
 	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
 	//mcl_optimizer_set_dropout (opt, 0.1);
-	run_test (opt, 0.001, 50, 2, 1);
+	run_test (opt, 0.001, 50, 7, 3);
 }
 
 void test_mnist_adam ()
@@ -356,7 +408,26 @@ void test_mnist_adam ()
 	mcl_dataset *data = get_data_mnist ();
 	mcl_optimizer *opt = get_opt (net, data);
 	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
-	run_test (opt, 0.0001, 100, 2, 1);
+	clock_t t;
+	t = clock ();
+	run_test (opt, 0.0001, 100, 3, 3);
+	t = clock () - t;
+	printf ("time: %f\n\n", ((double)t) / CLOCKS_PER_SEC);
+	mcl_network_export (net, "mnist_adam_30e.mcl");
+}
+
+void test_import_mnist ()
+{
+	mcl_network *net = mcl_network_import ("mnist_adam_30e.mcl");
+	mcl_dataset *data = get_data_mnist ();
+	mcl_optimizer *opt = get_opt (net, data);
+	mcl_optimizer_set_cost (opt, MCL_CROSS_ENTROPY);
+	float cost;
+	float acc;
+	cost = mcl_optimizer_test (opt, 10000, &acc);
+	printf ("test import mnist\n");
+	printf ("cost: %f acc: %f\n\n", cost, acc);
+	printf ("=====\n\n");
 }
 
 void test_boston_adam ()
@@ -365,7 +436,7 @@ void test_boston_adam ()
 	mcl_network *net = get_net_boston ();
 	mcl_dataset *data = get_data_boston ();
 	mcl_optimizer *opt = get_opt (net, data);
-	run_test (opt, 0.0001, 32, 50, 1);
+	run_test (opt, 0.0001, 32, 50, 3);
 }
 
 int main ()
@@ -379,13 +450,16 @@ int main ()
 	//test_forward ();
 	
 	//test_xor_sgd ();
-	//test_xor_sgd ();
+	//test_xor_adam ();
 	//test_reg_sgd ();
 	//test_reg_adam ();
-	//test_iris_sgd ();
-	//test_iris_adam ();
+	test_iris_sgd ();
+	test_iris_sgd_m ();
+	test_iris_rmsprop ();
+	test_iris_adam ();
 	//test_mnist_adam ();
 	//test_boston_adam ();
+	//test_import_mnist ();
 
 	return 0;
 }
